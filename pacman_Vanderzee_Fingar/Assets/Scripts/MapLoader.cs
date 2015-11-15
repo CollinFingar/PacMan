@@ -11,18 +11,25 @@ public class MapLoader : MonoBehaviour {
     public GameObject outsidePrefab;
     public GameObject pelletPrefab;
     public GameObject theCamera;
+    public GameObject pacmanPrefab;
 
     List<string> fullMap;
     List<string> finalMap;
-    public List<List<GameObject>> useableTiles;
-    List<GameObject> thePellets;
+    public List<List<GameObject>> thePellets;
+    //List<GameObject> thePellets;
     int oldRowNum;
     int oldColNum;
     int colNum = 0;
 
     GameObject map;
     GameObject pellets;
+    GameObject pacman;
     public string mapName;
+
+    bool hoveringOnGUI = false;
+    bool pacmanPlaced = false;
+
+    Pacman pacmanScript;
 
     // Use this for initialization
     void Start () {
@@ -32,8 +39,8 @@ public class MapLoader : MonoBehaviour {
 
         fullMap = new List<string>();
         finalMap = new List<string>();
-        useableTiles = new List<List<GameObject>>();
-        thePellets = new List<GameObject>();
+        //useableTiles = new List<List<GameObject>>();
+        thePellets = new List<List<GameObject>>();
 
         readMap();
         condenseMap();
@@ -43,6 +50,103 @@ public class MapLoader : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+        //Left click to place Pacman
+        if (Input.GetMouseButtonDown(0) && !hoveringOnGUI)
+        {
+            Vector2 rayPos = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y);
+            RaycastHit2D hit = Physics2D.Raycast(rayPos, Vector2.zero, 0f);
+            
+            if (hit.transform.tag == "Pellet")
+            {
+                //Spawn Pacman
+                pacman = Instantiate(pacmanPrefab, new Vector3(hit.transform.position.x, hit.transform.position.y, hit.transform.position.z - 1), Quaternion.identity) as GameObject;
+                pacmanScript = pacman.GetComponent<Pacman>();
+                pacmanScript.currentRow = hit.transform.gameObject.GetComponent<PelletInfo>().row;
+                pacmanScript.currentCol = hit.transform.gameObject.GetComponent<PelletInfo>().col;
+                
+                pacmanPlaced = true;
+                
+            }
+        }
+
+        //Move Pacman TESTING
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            if (finalMap[pacmanScript.currentRow - 1][pacmanScript.currentCol] == '.')
+            {
+                //Move Pacman Up
+                pacman.transform.position = new Vector3(pacmanScript.currentCol, -pacmanScript.currentRow + 1, transform.position.z);
+                pacmanScript.currentRow--;
+
+                //Remove Pellet
+                GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
+                if (aPellet.GetComponent<PelletInfo>().eaten == false)
+                {
+                    aPellet.GetComponent<SpriteRenderer>().enabled = false;
+                    aPellet.GetComponent<PelletInfo>().eaten = true;
+                }
+
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            if (finalMap[pacmanScript.currentRow][pacmanScript.currentCol - 1] == '.')
+            {
+                //Move Pacman Left
+                pacman.transform.position = new Vector3(pacmanScript.currentCol -1, -pacmanScript.currentRow, transform.position.z);
+                pacmanScript.currentCol--;
+
+                //Remove Pellet
+                GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
+                if (aPellet.GetComponent<PelletInfo>().eaten == false)
+                {
+                    aPellet.GetComponent<SpriteRenderer>().enabled = false;
+                    aPellet.GetComponent<PelletInfo>().eaten = true;
+                }
+
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            if (finalMap[pacmanScript.currentRow + 1][pacmanScript.currentCol] == '.')
+            {
+                //Move Pacman Down
+                pacman.transform.position = new Vector3(pacmanScript.currentCol, -pacmanScript.currentRow - 1, transform.position.z);
+                pacmanScript.currentRow++;
+
+                //Remove Pellet
+                GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
+                if (aPellet.GetComponent<PelletInfo>().eaten == false)
+                {
+                    aPellet.GetComponent<SpriteRenderer>().enabled = false;
+                    aPellet.GetComponent<PelletInfo>().eaten = true;
+                }
+
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            if (finalMap[pacmanScript.currentRow][pacmanScript.currentCol + 1] == '.')
+            {
+                //Move Pacman Right
+                pacman.transform.position = new Vector3(pacmanScript.currentCol + 1, -pacmanScript.currentRow, transform.position.z);
+                pacmanScript.currentCol++;
+
+                //Remove Pellet
+                GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
+                if (aPellet.GetComponent<PelletInfo>().eaten == false)
+                {
+                    aPellet.GetComponent<SpriteRenderer>().enabled = false;
+                    aPellet.GetComponent<PelletInfo>().eaten = true;
+                }
+
+            }
+        }
+
+        //Move Camera
         if (Input.GetKey(KeyCode.RightArrow))
         {
             Vector3 cameraPos = theCamera.transform.position;
@@ -70,6 +174,32 @@ public class MapLoader : MonoBehaviour {
             cameraPos.y -= 1;
             theCamera.transform.position = cameraPos;
         }
+    }
+
+    void OnGUI()
+    {
+        //Start Button
+        if (GUI.Button(new Rect(10, 10, 50, 30), "Start"))
+        {
+            //Only run when Pacman has been placed
+            if (pacmanPlaced)
+            {
+                //Remove Pellet
+                GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
+                aPellet.GetComponent<SpriteRenderer>().enabled = false;
+                aPellet.GetComponent<PelletInfo>().eaten = true;
+            }
+            else
+            {
+                Debug.Log("Must pick valid location for Pacman. Use mouse");
+            }
+
+
+        }
+
+        //If were hovering over a button
+        if (new Rect(10, 10, 50, 30).Contains(Event.current.mousePosition)) hoveringOnGUI = true;
+        else if (hoveringOnGUI) hoveringOnGUI = false;
     }
 
     void readMap()
@@ -177,7 +307,7 @@ public class MapLoader : MonoBehaviour {
                     tile = floorPrefab;
                     GameObject newTile = Instantiate(tile, new Vector3(col, -row, 1), Quaternion.identity) as GameObject;
                     newTile.transform.parent = map.transform;
-                    arow.Add(newTile);
+                    //arow.Add(newTile);
 
                     //Add Pellet in same location
                     GameObject aPellet = pelletPrefab;
@@ -186,7 +316,7 @@ public class MapLoader : MonoBehaviour {
                     infoScript.row = row;
                     infoScript.col = col;
                     newPellet.transform.parent = pellets.transform;
-                    thePellets.Add(newPellet);
+                    arow.Add(newPellet);
 
                 }
 
@@ -207,7 +337,7 @@ public class MapLoader : MonoBehaviour {
                 }
             }
             //Add the list of Gameobjects to the big list to create 2d. put at beginning because order is reversed
-            useableTiles.Insert(0, arow);
+            thePellets.Insert(0, arow);
         }
     }
 }
