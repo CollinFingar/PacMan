@@ -35,141 +35,148 @@ public class Ghost : MonoBehaviour {
         //FOLLOW MOVEMENT
         if (begin && follow)
         {
-            ///MOVE TO PACMAN
-
-            //If Pacman is above
-            if (pacman.transform.position.y > transform.position.y)
-            {
-
-                //Move up and avoid obstacles
-                if (finalMap[currentRow - 1][currentCol] == '.')
-                {
-                    transform.position = new Vector3(currentCol, -currentRow + 1, transform.position.z);
-                    currentRow--;
-
-                }
-            }
-
-            //If Pacman is below
-            if (pacman.transform.position.y < transform.position.y)
-            {
-
-                //Move down and avoid obstacles
-                if (finalMap[currentRow + 1][currentCol] == '.')
-                {
-                    transform.position = new Vector3(currentCol, -currentRow - 1, transform.position.z);
-                    currentRow++;
-
-                }
-            }
-
-            //If Pacman is left
-            if (pacman.transform.position.x < transform.position.x)
-            {
-
-                //Move down and avoid obstacles
-                if (finalMap[currentRow][currentCol - 1] == '.')
-                {
-                    transform.position = new Vector3(currentCol - 1, -currentRow, transform.position.z);
-                    currentCol--;
-
-                }
-            }
-
-            //If Pacman is right
-            if (pacman.transform.position.x > transform.position.x)
-            {
-
-                //Move down and avoid obstacles
-                if (finalMap[currentRow][currentCol + 1] == '.')
-                {
-                    transform.position = new Vector3(currentCol + 1, -currentRow, transform.position.z);
-                    currentCol++;
-
-                }
-            }
-
-
-
+            followMovement();
         }
 
         //RANDOM MOVEMENT
-        else if (begin && random)
+        else if(begin && random)
         {
-            //Move a random direction for a set amount of spaces
-
-            //Pick direction when counter is reset
-            if (counter == 0)
-            {
-                moveRandom();
-            }
-
-            //Up
-            if (randomVertDir == "Up")
-            { 
-                //Move up and avoid obstacles
-                if (finalMap[currentRow - 1][currentCol] == '.')
-                {
-                    transform.position = new Vector3(currentCol, -currentRow + 1, transform.position.z);
-                    currentRow--;
-
-                }
-
-            }
-
-            //Down
-            else if (randomVertDir == "Down")
-            {
-                //Move down and avoid obstacles
-                if (finalMap[currentRow + 1][currentCol] == '.')
-                {
-                    transform.position = new Vector3(currentCol, -currentRow - 1, transform.position.z);
-                    currentRow++;
-
-                }
-
-            }
-
-            //Left
-            if (randomHorizDir == "Left")
-            {
-                //Move down and avoid obstacles
-                if (finalMap[currentRow][currentCol - 1] == '.')
-                {
-                    transform.position = new Vector3(currentCol - 1, -currentRow, transform.position.z);
-                    currentCol--;
-
-                }
-
-            }
-
-            //Right
-            else if (randomHorizDir == "Right")
-            {
-                //Move down and avoid obstacles
-                if (finalMap[currentRow][currentCol + 1] == '.')
-                {
-                    transform.position = new Vector3(currentCol + 1, -currentRow, transform.position.z);
-                    currentCol++;
-
-                }
-
-            }
-
-            //Increment counter
-            counter++;
-
-            //Moved in dir too long. Switch directions
-            if(counter > wanderDistance)
-            {
-                counter = 0;
-            }
-
+            randomMovement();
         }
         
     }
 
-    void moveRandom()
+    void followMovement()
+    {
+        //If Pacman is above
+        if (pacman.transform.position.y > transform.position.y)
+        {
+
+            //Move up and avoid obstacles
+            if (finalMap[currentRow - 1][currentCol] == '.')
+            {
+                transform.position = new Vector3(currentCol, -currentRow + 1, transform.position.z);
+                currentRow--;
+
+            }
+        }
+
+        //If Pacman is below
+        if (pacman.transform.position.y < transform.position.y)
+        {
+
+            //Move down and avoid obstacles
+            if (finalMap[currentRow + 1][currentCol] == '.')
+            {
+                transform.position = new Vector3(currentCol, -currentRow - 1, transform.position.z);
+                currentRow++;
+
+            }
+        }
+
+        //If Pacman is left
+        if (pacman.transform.position.x < transform.position.x)
+        {
+
+            //Move down and avoid obstacles
+            if (finalMap[currentRow][currentCol - 1] == '.')
+            {
+                transform.position = new Vector3(currentCol - 1, -currentRow, transform.position.z);
+                currentCol--;
+
+            }
+        }
+
+        //If Pacman is right
+        if (pacman.transform.position.x > transform.position.x)
+        {
+
+            //Move down and avoid obstacles
+            if (finalMap[currentRow][currentCol + 1] == '.')
+            {
+                transform.position = new Vector3(currentCol + 1, -currentRow, transform.position.z);
+                currentCol++;
+
+            }
+        }
+    }
+
+    void randomMovement()
+    {
+       
+        //Move a random direction for a set amount of spaces
+
+        //Pick direction when counter is reset
+        if (counter == 0)
+        {
+            pickRandomDirection();
+        }
+
+        //Up
+        if (randomVertDir == "Up")
+        {
+            //Move up and avoid obstacles
+            if (finalMap[currentRow - 1][currentCol] == '.')
+            {
+                transform.position = new Vector3(currentCol, -currentRow + 1, transform.position.z);
+                currentRow--;
+
+            }
+
+        }
+
+        //Down
+        else if (randomVertDir == "Down")
+        {
+            //Move down and avoid obstacles
+            if (finalMap[currentRow + 1][currentCol] == '.')
+            {
+                transform.position = new Vector3(currentCol, -currentRow - 1, transform.position.z);
+                currentRow++;
+
+            }
+
+        }
+
+        //Left
+        if (randomHorizDir == "Left")
+        {
+            //Move down and avoid obstacles
+            if (finalMap[currentRow][currentCol - 1] == '.')
+            {
+                transform.position = new Vector3(currentCol - 1, -currentRow, transform.position.z);
+                currentCol--;
+
+            }
+
+        }
+
+        //Right
+        else if (randomHorizDir == "Right")
+        {
+            //Move down and avoid obstacles
+            if (finalMap[currentRow][currentCol + 1] == '.')
+            {
+                transform.position = new Vector3(currentCol + 1, -currentRow, transform.position.z);
+                currentCol++;
+
+            }
+
+        }
+
+        //Increment counter
+        counter++;
+
+        //Moved in dir too long. Switch directions
+        if (counter > wanderDistance)
+        {
+            counter = 0;
+        }
+
+        
+    }
+
+    void pickRandomDirection()
     {
         //Move Randomly
 
@@ -221,7 +228,6 @@ public class Ghost : MonoBehaviour {
     {
         finalMap = map;
     }
-    
     
     public void setPacman()
     {
