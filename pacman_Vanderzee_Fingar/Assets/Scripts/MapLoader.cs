@@ -14,6 +14,8 @@ public class MapLoader : MonoBehaviour {
     public GameObject theCamera;
     public GameObject pacmanPrefab;
 
+    public GameObject[] ghosts;
+
     List<string> fullMap;
     List<string> finalMap;
     public List<List<GameObject>> thePellets;
@@ -29,6 +31,7 @@ public class MapLoader : MonoBehaviour {
 
     bool hoveringOnGUI = false;
     bool pacmanPlaced = false;
+    bool begin = false;
 
     Pacman pacmanScript;
 
@@ -74,88 +77,92 @@ public class MapLoader : MonoBehaviour {
             }
         }
 
-        //Move Pacman TESTING
-        if (Input.GetKey(KeyCode.W))
+        //If we have placed pacman and hit start
+        if (begin)
         {
-            if (finalMap[pacmanScript.currentRow - 1][pacmanScript.currentCol] == '.')
+            //Move Pacman TESTING
+            if (Input.GetKey(KeyCode.W))
             {
-                //Move Pacman Up
-                pacman.transform.position = new Vector3(pacmanScript.currentCol, -pacmanScript.currentRow + 1, transform.position.z);
-                pacmanScript.currentRow--;
-
-                //Remove Pellet
-                GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
-                if (aPellet.GetComponent<PelletInfo>().eaten == false)
+                if (finalMap[pacmanScript.currentRow - 1][pacmanScript.currentCol] == '.')
                 {
-                    score += 1;
-                    aPellet.GetComponent<SpriteRenderer>().enabled = false;
-                    aPellet.GetComponent<PelletInfo>().eaten = true;
-                    text.text = "SCORE: "+score;
-                }
+                    //Move Pacman Up
+                    pacman.transform.position = new Vector3(pacmanScript.currentCol, -pacmanScript.currentRow + 1, transform.position.z);
+                    pacmanScript.currentRow--;
 
+                    //Remove Pellet
+                    GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
+                    if (aPellet.GetComponent<PelletInfo>().eaten == false)
+                    {
+                        score += 1;
+                        aPellet.GetComponent<SpriteRenderer>().enabled = false;
+                        aPellet.GetComponent<PelletInfo>().eaten = true;
+                        text.text = "SCORE: " + score;
+                    }
+
+                }
             }
-        }
 
-        else if (Input.GetKey(KeyCode.A))
-        {
-            if (finalMap[pacmanScript.currentRow][pacmanScript.currentCol - 1] == '.')
+            else if (Input.GetKey(KeyCode.A))
             {
-                //Move Pacman Left
-                pacman.transform.position = new Vector3(pacmanScript.currentCol -1, -pacmanScript.currentRow, transform.position.z);
-                pacmanScript.currentCol--;
-
-                //Remove Pellet
-                GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
-                if (aPellet.GetComponent<PelletInfo>().eaten == false)
+                if (finalMap[pacmanScript.currentRow][pacmanScript.currentCol - 1] == '.')
                 {
-                    score += 1;
-                    aPellet.GetComponent<SpriteRenderer>().enabled = false;
-                    aPellet.GetComponent<PelletInfo>().eaten = true;
-                    text.text = "SCORE: " + score;
-                }
+                    //Move Pacman Left
+                    pacman.transform.position = new Vector3(pacmanScript.currentCol - 1, -pacmanScript.currentRow, transform.position.z);
+                    pacmanScript.currentCol--;
 
+                    //Remove Pellet
+                    GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
+                    if (aPellet.GetComponent<PelletInfo>().eaten == false)
+                    {
+                        score += 1;
+                        aPellet.GetComponent<SpriteRenderer>().enabled = false;
+                        aPellet.GetComponent<PelletInfo>().eaten = true;
+                        text.text = "SCORE: " + score;
+                    }
+
+                }
             }
-        }
 
-        else if(Input.GetKey(KeyCode.S))
-        {
-            if (finalMap[pacmanScript.currentRow + 1][pacmanScript.currentCol] == '.')
+            else if (Input.GetKey(KeyCode.S))
             {
-                //Move Pacman Down
-                pacman.transform.position = new Vector3(pacmanScript.currentCol, -pacmanScript.currentRow - 1, transform.position.z);
-                pacmanScript.currentRow++;
-
-                //Remove Pellet
-                GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
-                if (aPellet.GetComponent<PelletInfo>().eaten == false)
+                if (finalMap[pacmanScript.currentRow + 1][pacmanScript.currentCol] == '.')
                 {
-                    score += 1;
-                    aPellet.GetComponent<SpriteRenderer>().enabled = false;
-                    aPellet.GetComponent<PelletInfo>().eaten = true;
-                    text.text = "SCORE: " + score;
-                }
+                    //Move Pacman Down
+                    pacman.transform.position = new Vector3(pacmanScript.currentCol, -pacmanScript.currentRow - 1, transform.position.z);
+                    pacmanScript.currentRow++;
 
+                    //Remove Pellet
+                    GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
+                    if (aPellet.GetComponent<PelletInfo>().eaten == false)
+                    {
+                        score += 1;
+                        aPellet.GetComponent<SpriteRenderer>().enabled = false;
+                        aPellet.GetComponent<PelletInfo>().eaten = true;
+                        text.text = "SCORE: " + score;
+                    }
+
+                }
             }
-        }
 
-        else if(Input.GetKey(KeyCode.D))
-        {
-            if (finalMap[pacmanScript.currentRow][pacmanScript.currentCol + 1] == '.')
+            else if (Input.GetKey(KeyCode.D))
             {
-                //Move Pacman Right
-                pacman.transform.position = new Vector3(pacmanScript.currentCol + 1, -pacmanScript.currentRow, transform.position.z);
-                pacmanScript.currentCol++;
-
-                //Remove Pellet
-                GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
-                if (aPellet.GetComponent<PelletInfo>().eaten == false)
+                if (finalMap[pacmanScript.currentRow][pacmanScript.currentCol + 1] == '.')
                 {
-                    score += 1;
-                    aPellet.GetComponent<SpriteRenderer>().enabled = false;
-                    aPellet.GetComponent<PelletInfo>().eaten = true;
-                    text.text = "SCORE: " + score;
-                }
+                    //Move Pacman Right
+                    pacman.transform.position = new Vector3(pacmanScript.currentCol + 1, -pacmanScript.currentRow, transform.position.z);
+                    pacmanScript.currentCol++;
 
+                    //Remove Pellet
+                    GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
+                    if (aPellet.GetComponent<PelletInfo>().eaten == false)
+                    {
+                        score += 1;
+                        aPellet.GetComponent<SpriteRenderer>().enabled = false;
+                        aPellet.GetComponent<PelletInfo>().eaten = true;
+                        text.text = "SCORE: " + score;
+                    }
+
+                }
             }
         }
 
@@ -201,6 +208,14 @@ public class MapLoader : MonoBehaviour {
                 GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
                 aPellet.GetComponent<SpriteRenderer>().enabled = false;
                 aPellet.GetComponent<PelletInfo>().eaten = true;
+
+                //Set pacman in the ghosts
+                for(int i = 0; i < ghosts.Length; i++)
+                {
+                    ghosts[i].GetComponent<Ghost>().setPacman();
+                }
+
+                begin = true;
             }
             else
             {
@@ -298,6 +313,11 @@ public class MapLoader : MonoBehaviour {
             colNum = aLine.Length;
             finalMap.Add(aLine);
 
+        }
+        //Send finalmap to ghosts for obstacle detection
+        for(int i = 0; i < ghosts.Length; i++)
+        {
+            ghosts[i].GetComponent<Ghost>().setFinalMap(finalMap);
         }
     }
 
