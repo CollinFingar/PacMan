@@ -134,7 +134,7 @@ public class MapLoader : MonoBehaviour {
                 {
                     ghosts[i].GetComponent<Ghost>().setPacman();
                 }
-                pacmanScript.begin = true;
+                pacmanScript.setBegin();
                 begin = true;
             }
             else

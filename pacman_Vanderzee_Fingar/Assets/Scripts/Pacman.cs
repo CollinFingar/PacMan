@@ -16,6 +16,8 @@ public class Pacman : MonoBehaviour {
 
     public bool begin = false;
 
+    private string direction = "up";
+
     // Use this for initialization
     void Start () {
 	
@@ -25,7 +27,7 @@ public class Pacman : MonoBehaviour {
 	void Update () {
         if (begin) {
             //Move Pacman TESTING
-            if (Input.GetKey(KeyCode.W))
+            if (string.Compare(direction, "up")==0)
             {
                 if (finalMap[currentRow - 1][currentCol] == '.')
                 {
@@ -44,9 +46,12 @@ public class Pacman : MonoBehaviour {
                     }
 
                 }
+                else {
+                    chooseRandomDirection();
+                }
             }
 
-            else if (Input.GetKey(KeyCode.A))
+            else if (string.Compare(direction, "left") == 0)
             {
                 if (finalMap[currentRow][currentCol - 1] == '.')
                 {
@@ -65,9 +70,13 @@ public class Pacman : MonoBehaviour {
                     }
 
                 }
+                else
+                {
+                    chooseRandomDirection();
+                }
             }
 
-            else if (Input.GetKey(KeyCode.S))
+            else if (string.Compare(direction, "down") == 0)
             {
                 if (finalMap[currentRow + 1][currentCol] == '.')
                 {
@@ -86,9 +95,13 @@ public class Pacman : MonoBehaviour {
                     }
 
                 }
+                else
+                {
+                    chooseRandomDirection();
+                }
             }
 
-            else if (Input.GetKey(KeyCode.D))
+            else if (string.Compare(direction, "right") == 0)
             {
                 if (finalMap[currentRow][currentCol + 1] == '.')
                 {
@@ -107,9 +120,77 @@ public class Pacman : MonoBehaviour {
                     }
 
                 }
+                else
+                {
+                    chooseRandomDirection();
+                }
             }
         }
         
 
     }
+
+    public void setBegin() {
+        begin = true;
+        chooseRandomDirection();
+    }
+
+    void chooseRandomDirection() {
+        ArrayList goodDirec = new ArrayList();
+
+        GameObject aPellet = thePellets[currentRow-1][currentCol].gameObject;
+        if (finalMap[currentRow - 1][currentCol] == '.' && !aPellet.GetComponent<PelletInfo>().eaten)
+        {
+            goodDirec.Add("up");
+        }
+        aPellet = thePellets[currentRow + 1][currentCol].gameObject;
+        if (finalMap[currentRow + 1][currentCol] == '.' && !aPellet.GetComponent<PelletInfo>().eaten) {
+            goodDirec.Add("down");
+        }
+        aPellet = thePellets[currentRow][currentCol + 1].gameObject;
+        if (finalMap[currentRow][currentCol + 1] == '.' && !aPellet.GetComponent<PelletInfo>().eaten)
+        {
+            goodDirec.Add("right");
+        }
+        aPellet = thePellets[currentRow][currentCol - 1].gameObject;
+        if (finalMap[currentRow][currentCol - 1] == '.' && !aPellet.GetComponent<PelletInfo>().eaten)
+        {
+            goodDirec.Add("left");
+        }
+        if (goodDirec.Count > 0)
+        {
+            int random = Random.Range(0, goodDirec.Count - 1);
+            direction = (string)goodDirec[random];
+        }
+        else {
+            chooseLameDirection();
+        }
+        
+
+    }
+
+    void chooseLameDirection() {
+        ArrayList goodDirec = new ArrayList();
+        
+        if (finalMap[currentRow - 1][currentCol] == '.')
+        {
+            goodDirec.Add("up");
+        }
+        if (finalMap[currentRow + 1][currentCol] == '.')
+        {
+            goodDirec.Add("down");
+        }
+        if (finalMap[currentRow][currentCol + 1] == '.')
+        {
+            goodDirec.Add("right");
+        }
+        if (finalMap[currentRow][currentCol - 1] == '.')
+        {
+            goodDirec.Add("left");
+        }
+
+        int random = Random.Range(0, goodDirec.Count - 1);
+        direction = (string)goodDirec[random];
+    }
+
 }
