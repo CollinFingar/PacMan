@@ -31,6 +31,15 @@ public class Pacman : MonoBehaviour {
 
     void FixedUpdate() {
         iterate();
+        if (string.Compare(direction, "up") == 0) {
+            transform.localEulerAngles = new Vector3(0, 0, 90f);
+        } else if (string.Compare(direction, "left") == 0) {
+            transform.localEulerAngles = new Vector3(0, 0, 180);
+        } else if (string.Compare(direction, "down") == 0) {
+            transform.localEulerAngles = new Vector3(0, 0, 270);
+        } else {
+            transform.localEulerAngles = new Vector3(0, 0, 0);
+        }
     }
 
 

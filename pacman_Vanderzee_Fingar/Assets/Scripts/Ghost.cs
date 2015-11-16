@@ -16,7 +16,7 @@ public class Ghost : MonoBehaviour {
     public bool begin = false;  //True when player hits start
     public bool follow = false; //True when close enough to follow Pacman
     public bool random = false;  //True when far from Pacman
-    public bool psuedoRandom = true;   //True when close to Pacman but not close enough to follow
+    public bool psuedoRandom = false;   //True when close to Pacman but not close enough to follow
 
     public int wanderDistance; //Distance in one direction to move
     int counter = 0;
@@ -41,57 +41,65 @@ public class Ghost : MonoBehaviour {
     }
 
     void FixedUpdate() {
-
-        if (begin)
+        //If the game has begun
+        if (begin && transform.position != pacman.transform.position)
         {
             float distanceToPacman = Vector2.Distance(transform.position, pacman.transform.position);
             switch (ghostState)
             {
+                //if in a random state
                 case (int)states.random:
-                    if (distanceToPacman < 20)
+                    if (distanceToPacman < 20)  //switch to chasing if very close
                     {
                         ghostState = (int)states.chasing;
                     }
-                    else if (distanceToPacman < 40)
+                    else if (distanceToPacman < 40) //switch to psuedo random moving if sort of close
                     {
                         ghostState = (int)states.semiRandom;
                         psuedoRandom = true;
                     }
-                    else
+                    else           //else just move randomly
                     {
                         randomMovement();
                     }
                     break;
+                //if in the psuedo random state
                 case (int)states.semiRandom:
-                    if (distanceToPacman < 20)
+                    if (distanceToPacman < 20)  //switch to chasing if very close
                     {
                         ghostState = (int)states.chasing;
                         psuedoRandom = false;
                     }
-                    else if (distanceToPacman < 40)
+                    else if (distanceToPacman < 40)     //move psuedo randomly if kind of close
                     {
                         randomMovement();
                     }
-                    else
+                    else     //else switch to random movement
                     {
                         ghostState = (int)states.random;
                         psuedoRandom = false;
                     }
                     break;
+                //If in a chasing state
                 case (int)states.chasing:
-                    if (distanceToPacman < 20)
+                    if (distanceToPacman < 20)      //chase if still close
                     {
                         followMovement();
                     }
-                    else if (distanceToPacman < 40)
+                    else if (distanceToPacman < 40)     //switch to psuedo random state if semi close
                     {
                         ghostState = (int)states.semiRandom;
                     }
-                    else
+                    else        //else switch to random movement
                     {
                         ghostState = (int)states.random;
                     }
                     break;
+            }
+        }
+        else {
+            if (transform.position == pacman.transform.position) {
+                Debug.Log("End");
             }
         }
     }
