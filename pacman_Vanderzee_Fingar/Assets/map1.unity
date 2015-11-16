@@ -104,6 +104,9 @@ MonoBehaviour:
   currentCol: 69
   pacman: {fileID: 0}
   begin: 0
+  follow: 0
+  random: 1
+  psuedoRandom: 1
   wanderDistance: 10
 --- !u!1 &139288684
 GameObject:
@@ -566,6 +569,9 @@ MonoBehaviour:
   currentCol: 68
   pacman: {fileID: 0}
   begin: 0
+  follow: 0
+  random: 1
+  psuedoRandom: 1
   wanderDistance: 10
 --- !u!1 &1531406217
 GameObject:
@@ -762,6 +768,9 @@ MonoBehaviour:
   currentCol: 68
   pacman: {fileID: 0}
   begin: 0
+  follow: 0
+  random: 1
+  psuedoRandom: 1
   wanderDistance: 10
 --- !u!1 &1946950840
 GameObject:
@@ -836,6 +845,9 @@ MonoBehaviour:
   currentCol: 69
   pacman: {fileID: 0}
   begin: 0
+  follow: 0
+  random: 1
+  psuedoRandom: 1
   wanderDistance: 10
 --- !u!1001 &2125387435
 Prefab:

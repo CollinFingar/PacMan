@@ -25,9 +25,21 @@ public class Pacman : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if (begin) {
+        
+
+    }
+
+    void FixedUpdate() {
+        iterate();
+    }
+
+
+    void iterate() {
+
+        if (begin)
+        {
             //Move Pacman TESTING
-            if (string.Compare(direction, "up")==0)
+            if (string.Compare(direction, "up") == 0)
             {
                 if (finalMap[currentRow - 1][currentCol] == '.')
                 {
@@ -46,7 +58,8 @@ public class Pacman : MonoBehaviour {
                     }
 
                 }
-                else {
+                else
+                {
                     chooseRandomDirection();
                 }
             }
@@ -126,9 +139,11 @@ public class Pacman : MonoBehaviour {
                 }
             }
         }
-        
-
     }
+
+
+
+
 
     public void setBegin() {
         begin = true;
@@ -159,7 +174,7 @@ public class Pacman : MonoBehaviour {
         }
         if (goodDirec.Count > 0)
         {
-            int random = Random.Range(0, goodDirec.Count - 1);
+            int random = Random.Range(0, goodDirec.Count);
             direction = (string)goodDirec[random];
         }
         else {
@@ -189,7 +204,7 @@ public class Pacman : MonoBehaviour {
             goodDirec.Add("left");
         }
 
-        int random = Random.Range(0, goodDirec.Count - 1);
+        int random = Random.Range(0, goodDirec.Count);
         direction = (string)goodDirec[random];
     }
 

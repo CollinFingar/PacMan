@@ -32,6 +32,11 @@ public class Ghost : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         
+        
+        
+    }
+
+    void FixedUpdate() {
         //FOLLOW MOVEMENT
         if (begin && follow)
         {
@@ -39,11 +44,10 @@ public class Ghost : MonoBehaviour {
         }
 
         //RANDOM MOVEMENT & psuedo random movement
-        else if(begin && random || begin && psuedoRandom)
+        else if (begin && random || begin && psuedoRandom)
         {
             randomMovement();
         }
-        
     }
 
     //Called when doing follow movement to pacman
