@@ -24,6 +24,13 @@ public class Ghost : MonoBehaviour {
     string randomVertDir; //Up, Down, No
     string randomHorizDir; //Left, Right, No
 
+    enum states {
+        random,
+        semiRandom,
+        chasing
+    }
+    int ghostState = (int)states.random;
+
     // Use this for initialization
     void Start () {
         
@@ -31,22 +38,61 @@ public class Ghost : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        
-        
-        
     }
 
     void FixedUpdate() {
-        //FOLLOW MOVEMENT
-        if (begin && follow)
-        {
-            followMovement();
-        }
 
-        //RANDOM MOVEMENT & psuedo random movement
-        else if (begin && random || begin && psuedoRandom)
+        if (begin)
         {
-            randomMovement();
+            float distanceToPacman = Vector2.Distance(transform.position, pacman.transform.position);
+            switch (ghostState)
+            {
+                case (int)states.random:
+                    if (distanceToPacman < 20)
+                    {
+                        ghostState = (int)states.chasing;
+                    }
+                    else if (distanceToPacman < 40)
+                    {
+                        ghostState = (int)states.semiRandom;
+                        psuedoRandom = true;
+                    }
+                    else
+                    {
+                        randomMovement();
+                    }
+                    break;
+                case (int)states.semiRandom:
+                    if (distanceToPacman < 20)
+                    {
+                        ghostState = (int)states.chasing;
+                        psuedoRandom = false;
+                    }
+                    else if (distanceToPacman < 40)
+                    {
+                        randomMovement();
+                    }
+                    else
+                    {
+                        ghostState = (int)states.random;
+                        psuedoRandom = false;
+                    }
+                    break;
+                case (int)states.chasing:
+                    if (distanceToPacman < 20)
+                    {
+                        followMovement();
+                    }
+                    else if (distanceToPacman < 40)
+                    {
+                        ghostState = (int)states.semiRandom;
+                    }
+                    else
+                    {
+                        ghostState = (int)states.random;
+                    }
+                    break;
+            }
         }
     }
 
