@@ -3,6 +3,7 @@ using System.Collections;
 using System.Text;
 using System.IO;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class MapLoader : MonoBehaviour {
 
@@ -31,8 +32,12 @@ public class MapLoader : MonoBehaviour {
 
     Pacman pacmanScript;
 
+    public float score = 0f;
+    public Text text;
+
     // Use this for initialization
     void Start () {
+        text.text = "SCORE: 0";
 
         map = GameObject.Find("Map").gameObject;
         pellets = GameObject.Find("Pellets").gameObject;
@@ -70,7 +75,7 @@ public class MapLoader : MonoBehaviour {
         }
 
         //Move Pacman TESTING
-        if (Input.GetKeyDown(KeyCode.W))
+        if (Input.GetKey(KeyCode.W))
         {
             if (finalMap[pacmanScript.currentRow - 1][pacmanScript.currentCol] == '.')
             {
@@ -82,14 +87,16 @@ public class MapLoader : MonoBehaviour {
                 GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
                 if (aPellet.GetComponent<PelletInfo>().eaten == false)
                 {
+                    score += 1;
                     aPellet.GetComponent<SpriteRenderer>().enabled = false;
                     aPellet.GetComponent<PelletInfo>().eaten = true;
+                    text.text = "SCORE: "+score;
                 }
 
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.A))
+        else if (Input.GetKey(KeyCode.A))
         {
             if (finalMap[pacmanScript.currentRow][pacmanScript.currentCol - 1] == '.')
             {
@@ -101,14 +108,16 @@ public class MapLoader : MonoBehaviour {
                 GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
                 if (aPellet.GetComponent<PelletInfo>().eaten == false)
                 {
+                    score += 1;
                     aPellet.GetComponent<SpriteRenderer>().enabled = false;
                     aPellet.GetComponent<PelletInfo>().eaten = true;
+                    text.text = "SCORE: " + score;
                 }
 
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.S))
+        else if(Input.GetKey(KeyCode.S))
         {
             if (finalMap[pacmanScript.currentRow + 1][pacmanScript.currentCol] == '.')
             {
@@ -120,14 +129,16 @@ public class MapLoader : MonoBehaviour {
                 GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
                 if (aPellet.GetComponent<PelletInfo>().eaten == false)
                 {
+                    score += 1;
                     aPellet.GetComponent<SpriteRenderer>().enabled = false;
                     aPellet.GetComponent<PelletInfo>().eaten = true;
+                    text.text = "SCORE: " + score;
                 }
 
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.D))
+        else if(Input.GetKey(KeyCode.D))
         {
             if (finalMap[pacmanScript.currentRow][pacmanScript.currentCol + 1] == '.')
             {
@@ -139,8 +150,10 @@ public class MapLoader : MonoBehaviour {
                 GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
                 if (aPellet.GetComponent<PelletInfo>().eaten == false)
                 {
+                    score += 1;
                     aPellet.GetComponent<SpriteRenderer>().enabled = false;
                     aPellet.GetComponent<PelletInfo>().eaten = true;
+                    text.text = "SCORE: " + score;
                 }
 
             }
@@ -307,6 +320,12 @@ public class MapLoader : MonoBehaviour {
                     tile = floorPrefab;
                     GameObject newTile = Instantiate(tile, new Vector3(col, -row, 1), Quaternion.identity) as GameObject;
                     newTile.transform.parent = map.transform;
+
+                    if ((row + col) % 2 == 0) {
+                        SpriteRenderer sr = newTile.GetComponent<SpriteRenderer>();
+                        sr.color = new Color(.9f, .9f, .9f, 1);
+                    }
+
                     //arow.Add(newTile);
 
                     //Add Pellet in same location
