@@ -19,6 +19,10 @@ public class MapLoader : MonoBehaviour {
     List<string> fullMap;
     List<string> finalMap;
     public List<List<GameObject>> thePellets;
+
+    public int groupSize;
+    public List<List<GameObject>> pelletGroups;
+
     //List<GameObject> thePellets;
     int oldRowNum;
     int oldColNum;
@@ -49,10 +53,12 @@ public class MapLoader : MonoBehaviour {
         finalMap = new List<string>();
         //useableTiles = new List<List<GameObject>>();
         thePellets = new List<List<GameObject>>();
+        
 
         readMap();
         condenseMap();
         buildMap();
+        setupPelletGroups();
     }
 	
 	// Update is called once per frame
@@ -116,6 +122,51 @@ public class MapLoader : MonoBehaviour {
         }
     }
 
+
+    void setupPelletGroups()
+    {
+
+        int groupsPerRow = colNum / groupSize;
+        int groupsPerCol = (finalMap.Count - 1) / groupSize;
+        int currentGroupNum = 0;
+        pelletGroups = new List<List<GameObject>>(groupsPerCol * groupsPerRow);
+
+        List<GameObject> firstList = new List<GameObject>();
+        pelletGroups.Add(firstList);
+
+        int numberOfGroups = 0;
+        for (int i = 0; i <finalMap.Count; i++)
+        {
+            for (int j = 0; j < colNum; j++)
+            {
+                //Only if its a pellet
+                if (thePellets[i][j].tag == "Pellet")
+                {
+                    int groupToAddTo = currentGroupNum + (j / groupSize);
+
+                    //Add more lists as we need them
+                    if(numberOfGroups < groupToAddTo)
+                    {
+                        for(int k = 0; k < groupToAddTo; k++)
+                        {
+                            List<GameObject> aGroup = new List<GameObject>();
+                            pelletGroups.Add(aGroup);
+                            numberOfGroups = groupToAddTo;
+                        }
+                    }
+                    pelletGroups[groupToAddTo].Add(thePellets[i][j]);
+                    thePellets[i][j].GetComponent<PelletInfo>().groupNum = groupToAddTo;
+                }
+            }
+
+            //Increase group num
+            if( i%groupSize == 0)
+            {
+                currentGroupNum += groupSize;
+            }
+        }
+    }
+
     void OnGUI()
     {
         //Start Button
@@ -128,13 +179,14 @@ public class MapLoader : MonoBehaviour {
                 GameObject aPellet = thePellets[pacmanScript.currentRow][pacmanScript.currentCol].gameObject;
                 aPellet.GetComponent<SpriteRenderer>().enabled = false;
                 aPellet.GetComponent<PelletInfo>().eaten = true;
+                
 
                 //Set pacman in the ghosts
-                for(int i = 0; i < ghosts.Length; i++)
+                for (int i = 0; i < ghosts.Length; i++)
                 {
                     ghosts[i].GetComponent<Ghost>().setPacman();
                 }
-                pacmanScript.setBegin();
+                pacmanScript.setBegin(aPellet.GetComponent<PelletInfo>().groupNum);
                 begin = true;
             }
             else
@@ -272,8 +324,7 @@ public class MapLoader : MonoBehaviour {
                     GameObject aPellet = pelletPrefab;
                     GameObject newPellet = Instantiate(aPellet, new Vector3(col, -row, 0), Quaternion.identity) as GameObject;
                     PelletInfo infoScript = newPellet.GetComponent<PelletInfo>();
-                    infoScript.row = row;
-                    infoScript.col = col;
+                    infoScript.setupPellet(row, col);
                     newPellet.transform.parent = pellets.transform;
                     arow.Add(newPellet);
 

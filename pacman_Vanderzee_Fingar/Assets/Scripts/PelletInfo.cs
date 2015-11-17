@@ -6,6 +6,8 @@ public class PelletInfo : MonoBehaviour {
     public int row;
     public int col;
 
+    public int groupNum;
+
     public bool eaten = false;
 	// Use this for initialization
 	void Start () {
@@ -16,4 +18,13 @@ public class PelletInfo : MonoBehaviour {
 	void Update () {
 	
 	}
+
+    public void setupPellet(int arow, int acol)
+    {
+        row = arow;
+        col = acol;
+
+        //Add Pellet to a group
+
+    }
 }

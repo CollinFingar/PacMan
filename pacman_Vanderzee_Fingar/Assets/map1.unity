@@ -959,6 +959,7 @@ MonoBehaviour:
   - {fileID: 1246982787}
   - {fileID: 2063355728}
   - {fileID: 1932979487}
+  groupSize: 30
   mapName: map1.txt
   score: 0
   text: {fileID: 1531406218}
