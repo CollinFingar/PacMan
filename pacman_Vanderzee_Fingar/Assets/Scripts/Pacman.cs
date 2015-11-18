@@ -21,9 +21,13 @@ public class Pacman : MonoBehaviour {
     private bool wasBlocked = false;
 
     List<List<GameObject>> pelletGroups;
-    GameObject targetPellet;
+    public GameObject targetPellet;
 
     int currentPelletGroup;
+
+    bool usingAStarMovement = false;
+
+    List<GameObject> tilePath;
 
     // Use this for initialization
     void Start () {
@@ -40,7 +44,18 @@ public class Pacman : MonoBehaviour {
         if (begin)
         {
             //iterate();
-            safeGroupMovement();
+            //Normal Pellet following
+            if (!usingAStarMovement)
+            {
+                safeGroupMovement();
+            }
+
+            //Following the Astar Path
+            else
+            {
+                aStarMovement();
+            }
+            
             if (string.Compare(direction, "up") == 0)
             {
                 transform.localEulerAngles = new Vector3(0, 0, 90f);
@@ -69,7 +84,7 @@ public class Pacman : MonoBehaviour {
         //Need to think of more sophisticated way for him to go through group
 
         //Go through list of pellets in group and eat in order.
-
+        
         bool upObstacle = false;
         bool downObstacle = false;
         bool leftObstacle = false;
@@ -89,7 +104,7 @@ public class Pacman : MonoBehaviour {
 
             }
             //Obstacle
-            else
+            else 
             {
                 upObstacle = true;
             }
@@ -116,15 +131,15 @@ public class Pacman : MonoBehaviour {
             }
         }
 
-        
+
         //If Pellet is left
         if (transform.position.x > targetPellet.transform.position.x && (!wasBlocked || !(string.Compare(cameFrom, "left") == 0)))
         {
 
             //Move left and avoid obstacles
-            if (thePellets[currentRow][currentCol -1].tag == "Pellet")
+            if (thePellets[currentRow][currentCol - 1].tag == "Pellet")
             {
-                transform.position = new Vector3(currentCol -1, -currentRow, transform.position.z);
+                transform.position = new Vector3(currentCol - 1, -currentRow, transform.position.z);
                 currentCol--;
                 direction = "left";
                 removePellet();
@@ -139,11 +154,11 @@ public class Pacman : MonoBehaviour {
         }
 
         //If Pellet is right
-        else if (transform.position.x < targetPellet.transform.position.x && (!wasBlocked || !(string.Compare(cameFrom, "right")==0)))
+        else if (transform.position.x < targetPellet.transform.position.x && (!wasBlocked || !(string.Compare(cameFrom, "right") == 0)))
         {
 
             //Move right and avoid obstacles
-            if (thePellets[currentRow][currentCol  +1].tag == "Pellet")
+            if (thePellets[currentRow][currentCol + 1].tag == "Pellet")
             {
                 transform.position = new Vector3(currentCol + 1, -currentRow, transform.position.z);
                 currentCol++;
@@ -159,6 +174,14 @@ public class Pacman : MonoBehaviour {
             }
         }
 
+        //If theres an obstacle run a*
+        if (rightObstacle || leftObstacle || upObstacle || downObstacle)
+        {
+            aStarTile();
+
+        }
+
+        /*
         //Deal with obstacle avoidance here
         if (rightObstacle || leftObstacle || upObstacle || downObstacle)
         {
@@ -207,6 +230,7 @@ public class Pacman : MonoBehaviour {
             else {
                 if (thePellets[currentRow][currentCol-1].tag == "Pellet")     //try left
                 {
+
                     cameFrom = "right";
                     transform.position = new Vector3(currentCol - 1, -currentRow, transform.position.z);
                     direction = "left";
@@ -245,8 +269,118 @@ public class Pacman : MonoBehaviour {
                     }
                 }
             }
-        }
+        }*/
         
+
+    }
+
+    void aStarMovement()
+    {
+        transform.position = tilePath[0].transform.position;
+        tilePath.RemoveAt(0);
+
+        //Found goal
+        if(tilePath.Count == 0)
+        {
+            usingAStarMovement = false;
+
+            //Select new target
+            findClosestGroup();
+        }
+    }
+
+    void aStarTile()
+    {
+
+        tilePath = new List<GameObject>();
+
+        bool goalReached = false;
+
+        //Open list contains start
+        List<GameObject> openList = new List<GameObject>();
+        List<GameObject> closedList = new List<GameObject>();
+        openList.Add(thePellets[currentRow][currentCol]);
+
+        //Loop until we find the goal
+        while (!goalReached)
+        {
+            //Sort list by total cost. Lowest cost in front of list
+            openList.Sort(SortByCost);
+
+            //Current tile is lowest cost
+            GameObject currentTile = openList[0];
+            PelletInfo currentTileInfo = currentTile.GetComponent<PelletInfo>();
+
+            //Is current tile goal
+            if (currentTile.gameObject == targetPellet)
+            {
+                goalReached = true;
+                Debug.Log("Found it");
+
+                //Add tile path to array
+                GameObject tileForArray = currentTile;
+                while (tileForArray != null)
+                {
+                    tilePath.Insert(0, tileForArray);
+                    tileForArray = tileForArray.GetComponent<PelletInfo>().parent;
+                }
+
+                //Switch to astar path movement
+                usingAStarMovement = true;
+                //Set targetpellet to first element of path
+                targetPellet = tilePath[0];
+            }
+
+            //Keep looking
+            else
+            {
+                //Move current node to closed list and look at neighbors
+                closedList.Add(currentTile);
+                openList.RemoveAt(0);
+
+                //Find neighbors
+                List<GameObject> neighbors = findNeighbors(currentTile, currentTileInfo);
+
+
+                for (int i = 0; i < neighbors.Count; i++)
+                {
+                    PelletInfo neighborInfo = neighbors[i].GetComponent<PelletInfo>();
+
+                    //Neighbor in closed list & current start cost < neighbor start cost
+                    if (closedList.Contains(neighbors[i]) && currentTileInfo.costFromStart < neighborInfo.costFromStart)
+                    {
+                        neighborInfo.costFromStart = currentTileInfo.costFromStart;
+                        neighborInfo.parent = currentTile;
+                    }
+
+                    //neighbor in open list & current start cost < neighbor start cost
+                    else if (openList.Contains(neighbors[i]) && currentTileInfo.costFromStart < neighborInfo.costFromStart)
+                    {
+                        neighborInfo.costFromStart = currentTileInfo.costFromStart;
+                        neighborInfo.parent = currentTile;
+                    }
+
+                    //Neighbor not in either list. Set Distance from start and add to open
+                    else if (!openList.Contains(neighbors[i]) && !closedList.Contains(neighbors[i]))
+                    {
+                        openList.Add(neighbors[i]);
+                        neighborInfo.costFromStart = currentTileInfo.costFromStart + 1;
+                        neighborInfo.parent = currentTile;
+
+                    }
+                }
+            }
+        }
+
+    }
+
+    //Used as overloaded operation to find the lower cost of two tiles. FOR TILES
+    static int SortByCost(GameObject alowest, GameObject acurrent)
+    {
+        PelletInfo lowest = alowest.GetComponent<PelletInfo>();
+        PelletInfo current = acurrent.GetComponent<PelletInfo>();
+
+        return lowest.totalCost().CompareTo(current.totalCost());
     }
 
     //Called when Pacman moves to check if he is eating a pellet
@@ -284,6 +418,46 @@ public class Pacman : MonoBehaviour {
         }
     }
 
+    List<GameObject> findNeighbors(GameObject currentTile, PelletInfo currentTileInfo)
+    {
+        List<GameObject> neighbors = new List<GameObject>();
+        int rowIndex = currentTileInfo.row;
+        int colIndex = currentTileInfo.col;
+
+        //Directly below
+        if (finalMap[rowIndex + 1][colIndex] == '.')
+        {
+            //Increment distance from start and add to list of neighbors
+            GameObject aneighbor = thePellets[rowIndex + 1][colIndex];
+            neighbors.Add(aneighbor);
+        }
+
+        //Directly Above
+        if (finalMap[rowIndex - 1][colIndex] == '.')
+        {
+            //Increment distance from start and add to list of neighbors
+            GameObject aneighbor = thePellets[rowIndex - 1][colIndex];
+            neighbors.Add(aneighbor);
+        }
+
+        //Directly right
+        if (finalMap[rowIndex][colIndex + 1] == '.')
+        {
+            //Increment distance from start and add to list of neighbors
+            GameObject aneighbor = thePellets[rowIndex][colIndex + 1];
+            neighbors.Add(aneighbor);
+        }
+
+        //Directly left
+        if (finalMap[rowIndex][colIndex - 1] == '.')
+        {
+            //Increment distance from start and add to list of neighbors
+            GameObject aneighbor = thePellets[rowIndex][colIndex - 1];
+            neighbors.Add(aneighbor);
+        }
+
+        return neighbors;
+    }
 
     //Called when Pacman needs to find the closest group of pellets to begin eating
     void findClosestGroup()
