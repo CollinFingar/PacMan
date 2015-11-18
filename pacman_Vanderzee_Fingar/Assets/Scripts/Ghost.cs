@@ -108,7 +108,30 @@ public class Ghost : MonoBehaviour {
     void followMovement()
     {
         //If Pacman is above
-        if (pacman.transform.position.y > transform.position.y)
+        GameObject[] ghosts = GameObject.FindGameObjectsWithTag("Ghost");
+        bool oneAbove = false;
+        bool oneBelow=false;
+        bool oneLeft = false;
+        bool oneRight = false;
+        for (int i = 0; i < ghosts.Length; i++) {
+            Ghost ghostScript = ghosts[i].GetComponent<Ghost>();
+            if (ghostScript.currentCol == currentCol - 1 && ghostScript.currentRow == currentRow)
+            {
+                oneLeft = true;
+            }
+            else if (ghostScript.currentCol == currentCol + 1 && ghostScript.currentRow == currentRow) {
+                oneRight = true;
+            }
+            if (ghostScript.currentRow == currentRow - 1 && ghostScript.currentCol == currentCol)
+            {
+                oneAbove = true;
+            }
+            else if (ghostScript.currentRow == currentRow + 1 && ghostScript.currentCol == currentCol) {
+                oneBelow = true;
+            }
+        }
+
+        if (pacman.transform.position.y > transform.position.y && !oneAbove)
         {
 
             //Move up and avoid obstacles
@@ -121,7 +144,7 @@ public class Ghost : MonoBehaviour {
         }
 
         //If Pacman is below
-        if (pacman.transform.position.y < transform.position.y)
+        if (pacman.transform.position.y < transform.position.y && !oneBelow)
         {
 
             //Move down and avoid obstacles
@@ -134,7 +157,7 @@ public class Ghost : MonoBehaviour {
         }
 
         //If Pacman is left
-        if (pacman.transform.position.x < transform.position.x)
+        if (pacman.transform.position.x < transform.position.x && !oneLeft)
         {
 
             //Move down and avoid obstacles
@@ -147,7 +170,7 @@ public class Ghost : MonoBehaviour {
         }
 
         //If Pacman is right
-        if (pacman.transform.position.x > transform.position.x)
+        if (pacman.transform.position.x > transform.position.x && !oneRight)
         {
 
             //Move down and avoid obstacles
@@ -163,7 +186,34 @@ public class Ghost : MonoBehaviour {
     //Called when doing random movement or psuedo random movement.
     void randomMovement()
     {
-       
+        GameObject[] ghosts = GameObject.FindGameObjectsWithTag("Ghost");
+        bool oneAbove = false;
+        bool oneBelow = false;
+        bool oneLeft = false;
+        bool oneRight = false;
+        for (int i = 0; i < ghosts.Length; i++)
+        {
+            Ghost ghostScript = ghosts[i].GetComponent<Ghost>();
+            if (ghostScript.currentCol == currentCol - 1 && ghostScript.currentRow == currentRow)
+            {
+                oneLeft = true;
+            }
+            else if (ghostScript.currentCol == currentCol + 1 && ghostScript.currentRow == currentRow)
+            {
+                oneRight = true;
+            }
+            if (ghostScript.currentRow == currentRow - 1 && ghostScript.currentCol == currentCol)
+            {
+                oneAbove = true;
+            }
+            else if (ghostScript.currentRow == currentRow + 1 && ghostScript.currentCol == currentCol)
+            {
+                oneBelow = true;
+            }
+        }
+
+
+
         //Move a random direction for a set amount of spaces
 
         //Pick direction when counter is reset
@@ -173,7 +223,7 @@ public class Ghost : MonoBehaviour {
         }
 
         //Up
-        if (randomVertDir == "Up")
+        if (randomVertDir == "Up" && !oneAbove)
         {
             //Move up and avoid obstacles
             if (finalMap[currentRow - 1][currentCol] == '.')
@@ -186,7 +236,7 @@ public class Ghost : MonoBehaviour {
         }
 
         //Down
-        else if (randomVertDir == "Down")
+        else if (randomVertDir == "Down" && !oneBelow)
         {
             //Move down and avoid obstacles
             if (finalMap[currentRow + 1][currentCol] == '.')
@@ -199,7 +249,7 @@ public class Ghost : MonoBehaviour {
         }
 
         //Left
-        if (randomHorizDir == "Left")
+        if (randomHorizDir == "Left" && !oneLeft)
         {
             //Move down and avoid obstacles
             if (finalMap[currentRow][currentCol - 1] == '.')
@@ -212,7 +262,7 @@ public class Ghost : MonoBehaviour {
         }
 
         //Right
-        else if (randomHorizDir == "Right")
+        else if (randomHorizDir == "Right" && !oneRight)
         {
             //Move down and avoid obstacles
             if (finalMap[currentRow][currentCol + 1] == '.')
