@@ -17,6 +17,8 @@ public class Pacman : MonoBehaviour {
     public bool begin = false;
 
     private string direction = "up";
+    private string cameFrom = "";
+    private bool wasBlocked = false;
 
     List<List<GameObject>> pelletGroups;
     GameObject targetPellet;
@@ -73,7 +75,7 @@ public class Pacman : MonoBehaviour {
         bool leftObstacle = false;
         bool rightObstacle = false;
         //If Pellet is above
-        if (transform.position.y < targetPellet.transform.position.y)
+        if (transform.position.y < targetPellet.transform.position.y && (!wasBlocked || !(string.Compare(cameFrom, "up") == 0)))
         {
 
             //Move up and avoid obstacles
@@ -83,6 +85,7 @@ public class Pacman : MonoBehaviour {
                 currentRow--;
                 direction = "up";
                 removePellet();
+                wasBlocked = false;
 
             }
             //Obstacle
@@ -93,7 +96,7 @@ public class Pacman : MonoBehaviour {
         }
 
         //If Pellet is below
-        else if (transform.position.y > targetPellet.transform.position.y)
+        else if (transform.position.y > targetPellet.transform.position.y && (!wasBlocked || !(string.Compare(cameFrom, "down") == 0)))
         {
 
             //Move down and avoid obstacles
@@ -103,6 +106,7 @@ public class Pacman : MonoBehaviour {
                 currentRow++;
                 direction = "down";
                 removePellet();
+                wasBlocked = false;
             }
 
             //obstacle
@@ -114,7 +118,7 @@ public class Pacman : MonoBehaviour {
 
         
         //If Pellet is left
-        if (transform.position.x > targetPellet.transform.position.x)
+        if (transform.position.x > targetPellet.transform.position.x && (!wasBlocked || !(string.Compare(cameFrom, "left") == 0)))
         {
 
             //Move left and avoid obstacles
@@ -124,6 +128,7 @@ public class Pacman : MonoBehaviour {
                 currentCol--;
                 direction = "left";
                 removePellet();
+                wasBlocked = false;
             }
 
             //Obstacle
@@ -134,7 +139,7 @@ public class Pacman : MonoBehaviour {
         }
 
         //If Pellet is right
-        else if (transform.position.x < targetPellet.transform.position.x)
+        else if (transform.position.x < targetPellet.transform.position.x && (!wasBlocked || !(string.Compare(cameFrom, "right")==0)))
         {
 
             //Move right and avoid obstacles
@@ -144,6 +149,7 @@ public class Pacman : MonoBehaviour {
                 currentCol++;
                 direction = "right";
                 removePellet();
+                wasBlocked = false;
             }
 
             //Obstacle
@@ -154,6 +160,92 @@ public class Pacman : MonoBehaviour {
         }
 
         //Deal with obstacle avoidance here
+        if (rightObstacle || leftObstacle || upObstacle || downObstacle)
+        {
+            if (rightObstacle || leftObstacle)
+            {        //if going left or right and blocked
+                if (thePellets[currentRow - 1][currentCol].tag == "Pellet")     //try up
+                {
+                    cameFrom = "down";
+                    transform.position = new Vector3(currentCol, -currentRow + 1, transform.position.z);
+                    direction = "up";
+                    currentRow--;
+                    removePellet();
+                    wasBlocked = true;
+                }
+                else if (thePellets[currentRow + 1][currentCol].tag == "Pellet")      //try down
+                {
+                    cameFrom = "up";
+                    transform.position = new Vector3(currentCol, -currentRow - 1, transform.position.z);
+                    direction = "down";
+                    currentRow++;
+                    removePellet();
+                    wasBlocked = true;
+                }
+                else
+                {              //move back
+                    if (leftObstacle)
+                    {
+                        transform.position = new Vector3(currentCol + 1, -currentRow, transform.position.z);
+                        currentCol++;
+                        direction = "right";
+                        cameFrom = "left";
+                        removePellet();
+                        wasBlocked = true;
+                    }
+                    else
+                    {
+                        transform.position = new Vector3(currentCol - 1, -currentRow, transform.position.z);
+                        currentCol--;
+                        direction = "left";
+                        cameFrom = "right";
+                        removePellet();
+                        wasBlocked = true;
+                    }
+                }
+            }
+            else {
+                if (thePellets[currentRow][currentCol-1].tag == "Pellet")     //try left
+                {
+                    cameFrom = "right";
+                    transform.position = new Vector3(currentCol - 1, -currentRow, transform.position.z);
+                    direction = "left";
+                    currentCol--;
+                    removePellet();
+                    wasBlocked = true;
+                }
+                else if (thePellets[currentRow][currentCol+1].tag == "Pellet")      //try right
+                {
+                    cameFrom = "left";
+                    transform.position = new Vector3(currentCol + 1, -currentRow, transform.position.z);
+                    direction = "right";
+                    currentCol++;
+                    removePellet();
+                    wasBlocked = true;
+                }
+                else
+                {              //move back
+                    if (downObstacle)
+                    {
+                        transform.position = new Vector3(currentCol, -currentRow + 1, transform.position.z);
+                        currentRow--;
+                        direction = "up";
+                        cameFrom = "down";
+                        removePellet();
+                        wasBlocked = true;
+                    }
+                    else
+                    {
+                        transform.position = new Vector3(currentCol, -currentRow - 1, transform.position.z);
+                        currentRow++;
+                        direction = "down";
+                        cameFrom = "up";
+                        removePellet();
+                        wasBlocked = true;
+                    }
+                }
+            }
+        }
         
     }
 
