@@ -10,6 +10,7 @@ public class Pacman : MonoBehaviour {
 
     public List<string> finalMap;
     public int maxCol;
+    public int groupSize;
 
     private int score = 0;
     public Text text;
@@ -28,31 +29,68 @@ public class Pacman : MonoBehaviour {
 
     bool usingAStarMovement = false;
 
+    GameObject[] ghosts;
+
+    bool ghostsFar = true;      //True to activate good stage. Follows pellets
+    //bool ghostNearby = false;   //True to activiate middle stage. Ghost closish.
+
+    bool noMoreHorizontalGroups = false;    //Used by the middle stage when looking for new pellet group.
+    bool noMoreVerticalGroups = false;      //If there isn't any good groups to go to they will be true.
+                                            //At which time, we should ignore and do normal pellet eating
+
+
     public List<GameObject> tilePath;
 
     // Use this for initialization
     void Start () {
-	
+        ghosts = GameObject.FindGameObjectsWithTag("Ghost");
 	}
 	
 	// Update is called once per frame
 	void Update () {
-        
 
+        //TEST CODE FOR MIDDLE BEHAVIOR
+        if (Input.GetMouseButtonDown(1))
+        {
+            //do middle state according to closest ghost.
+            ghostsFar = false;
+        }
     }
 
     void FixedUpdate() {
         if (begin)
         {
-            //iterate();
+            
+            //TESTING NEW BEHAVIOR
+            if (!ghostsFar)
+            {
+                float closest = Mathf.Infinity;
+                int closeIndex = 0;
+                for(int i = 0; i < ghosts.Length; i++)
+                {
+                    float aDistance = Vector2.Distance(transform.position, ghosts[i].transform.position);
+                    if(aDistance < closest)
+                    {
+                        closest = aDistance;
+                        closeIndex = i;
+                    }
+                }
+
+                //Switch pellet groups to avoid ghost
+                findNeighboringGroup(ghosts[closeIndex]);
+                ghostsFar = true;
+
+
+            }
+
             //Normal Pellet following
-            if (!usingAStarMovement)
+            if (!usingAStarMovement & ghostsFar)
             {
                 safeGroupMovement();
             }
 
             //Following the Astar Path
-            else if(usingAStarMovement)
+            else if(usingAStarMovement & ghostsFar)
             {
                 aStarMovement();
             }
@@ -72,6 +110,215 @@ public class Pacman : MonoBehaviour {
             else
             {
                 transform.localEulerAngles = new Vector3(0, 0, 0);
+            }
+        }
+    }
+
+
+
+    //Called when ghosts are closish to Pacman and should switch groups to be safe
+    void findNeighboringGroup(GameObject ghost)
+    {
+        //Find which direction we need to go
+        //Is the ghost closer in vertical or horizontal?
+        float vertDistance = Mathf.Abs(transform.position.y - ghost.transform.position.y);
+        float horizDistance = Mathf.Abs(transform.position.x - ghost.transform.position.x);
+
+        Debug.Log("current group is " + currentPelletGroup);
+
+        //Closer Horizontally
+        if (vertDistance > horizDistance)
+        {
+            lookHorizontally(ghost);
+        }
+
+        //Closer Vertically
+        else
+        {
+            lookVertically(ghost);
+        }
+
+        //If there isn't a smart group to move to, ignore and go back to normal pellet eating
+        if(noMoreHorizontalGroups && noMoreVerticalGroups)
+        {
+            Debug.Log("No good groups to switch to");
+            //ghostsFar = true;
+        }
+
+        Debug.Log("new group is " + currentPelletGroup);
+        
+    }
+
+    //Called by findNeighboringGroup when we look vertically for a new group
+    void lookVertically(GameObject ghost)
+    {
+        int groupsPerRow = maxCol / groupSize;
+        int groupsPerCol = (finalMap.Count - 1) / groupSize;
+        noMoreVerticalGroups = false;
+        //Do we look up or down?
+        //Ghost is up
+        if (ghost.transform.position.y > transform.position.y)
+        {
+            //Look for a non empty group below
+            bool keepLookingDown = true;
+            int iter = groupsPerRow;
+            while (keepLookingDown)
+            {
+                //Look down a row. currentgroup + groupsperrow
+                //Don't go out of bounds
+                if (currentPelletGroup + iter > pelletGroups.Count)
+                {
+                    //No more rows below
+                    keepLookingDown = false;
+                    noMoreVerticalGroups = true;
+                    //Look horizontally instead
+                    lookHorizontally(ghost);
+                    break;
+                }
+
+                //Look at group below
+                else
+                {
+                    //Is there an empty pellet
+                    for (int i = 0; i < pelletGroups[currentPelletGroup + iter].Count; i++)
+                    {
+                        if (pelletGroups[currentPelletGroup + iter][i].GetComponent<PelletInfo>().eaten == false)
+                        {
+                            //Set new target pellet and group
+                            targetPellet = pelletGroups[currentPelletGroup + iter][i];
+                            currentPelletGroup = currentPelletGroup + iter;
+                            keepLookingDown = false;
+                            break;
+                        }
+                    }
+                }
+                iter += groupsPerRow;
+            }
+
+        }
+        //Ghost is below
+        else
+        {
+            //Look for a non empty group above
+            bool keepLookingUp = true;
+            int iter = groupsPerRow;
+            while (keepLookingUp)
+            {
+                //Look up a row. currentgroup - groupsperrow
+                //Don't go out of bounds
+                if (currentPelletGroup - iter < 0)
+                {
+                    //No more rows below
+                    keepLookingUp = false;
+                    noMoreVerticalGroups = true;
+                    //Look horizontally instead
+                    lookHorizontally(ghost);
+                    break;
+                }
+
+                //Look at group above
+                else
+                {
+                    //Is there an empty pellet
+                    for (int i = 0; i < pelletGroups[currentPelletGroup - iter].Count; i++)
+                    {
+                        if (pelletGroups[currentPelletGroup - iter][i].GetComponent<PelletInfo>().eaten == false)
+                        {
+                            //Set new target pellet and group
+                            targetPellet = pelletGroups[currentPelletGroup - iter][i];
+                            currentPelletGroup = currentPelletGroup - iter;
+                            keepLookingUp = false;
+                            break;
+                        }
+                    }
+                }
+                iter += groupsPerRow;
+            }
+        }
+    }
+    
+    //Called by findNeighboringGroup when we look horizontally for a new group
+    void lookHorizontally(GameObject ghost)
+    {
+
+        int groupsPerRow = maxCol / groupSize;
+        int groupsPerCol = (finalMap.Count - 1) / groupSize;
+        noMoreHorizontalGroups = false;
+
+        //Do we look left or right?
+        //Ghost is to the right
+        if (ghost.transform.position.x > transform.position.x)
+        {
+            //Look for a non empty group to the left
+            bool keepLookingLeft = true;
+            int iter = 1;
+            while (keepLookingLeft)
+            {
+                //Don't go up a row
+                if ((currentPelletGroup - iter) % groupsPerRow == 0)
+                {
+                    //No more groups to the left
+                    keepLookingLeft = false;
+                    noMoreHorizontalGroups = true;
+                    //Look vertically instead
+                    lookVertically(ghost);
+                    break;
+                }
+                //Look at group to the left
+                else
+                {
+                    //Is there an empty pellet
+                    for (int i = 0; i < pelletGroups[currentPelletGroup - iter].Count; i++)
+                    {
+                        if (pelletGroups[currentPelletGroup - iter][i].GetComponent<PelletInfo>().eaten == false)
+                        {
+                            //Set new target pellet and group
+                            targetPellet = pelletGroups[currentPelletGroup - iter][i];
+                            currentPelletGroup = currentPelletGroup - iter;
+                            keepLookingLeft = false;
+                            break;
+                        }
+                    }
+                }
+                iter++;
+            }
+
+        }
+        //Ghost is to the left
+        else
+        {
+            //Look for a non empty group to the right
+            bool keepLookingRight = true;
+            int iter = 1;
+            while (keepLookingRight)
+            {
+                //Don't go down a row
+                if ((currentPelletGroup + iter) % groupsPerRow == 0)
+                {
+                    //No more groups to the right
+                    keepLookingRight = false;
+                    noMoreHorizontalGroups = true;
+                    //Look vertically instead
+                    lookVertically(ghost);
+                    break;
+                }
+                //Look at group to the right
+                else
+                {
+                    //Is there an empty pellet
+                    for (int i = 0; i < pelletGroups[currentPelletGroup + iter].Count; i++)
+                    {
+                        if (pelletGroups[currentPelletGroup + iter][i].GetComponent<PelletInfo>().eaten == false)
+                        {
+                            //Set new target pellet and group
+                            targetPellet = pelletGroups[currentPelletGroup + iter][i];
+                            currentPelletGroup = currentPelletGroup + iter;
+                            keepLookingRight = false;
+                            break;
+                        }
+                    }
+                }
+                iter++;
             }
         }
     }
@@ -178,115 +425,22 @@ public class Pacman : MonoBehaviour {
         //If theres an obstacle run a*
         if (rightObstacle || leftObstacle || upObstacle || downObstacle)
         {
-            Debug.Log("Looking for a* path" + currentRow);
             aStarTile();
-
         }
-
-        /*
-        //Deal with obstacle avoidance here
-        if (rightObstacle || leftObstacle || upObstacle || downObstacle)
-        {
-            if (rightObstacle || leftObstacle)
-            {        //if going left or right and blocked
-                if (thePellets[currentRow - 1][currentCol].tag == "Pellet")     //try up
-                {
-                    cameFrom = "down";
-                    transform.position = new Vector3(currentCol, -currentRow + 1, transform.position.z);
-                    direction = "up";
-                    currentRow--;
-                    removePellet();
-                    wasBlocked = true;
-                }
-                else if (thePellets[currentRow + 1][currentCol].tag == "Pellet")      //try down
-                {
-                    cameFrom = "up";
-                    transform.position = new Vector3(currentCol, -currentRow - 1, transform.position.z);
-                    direction = "down";
-                    currentRow++;
-                    removePellet();
-                    wasBlocked = true;
-                }
-                else
-                {              //move back
-                    if (leftObstacle)
-                    {
-                        transform.position = new Vector3(currentCol + 1, -currentRow, transform.position.z);
-                        currentCol++;
-                        direction = "right";
-                        cameFrom = "left";
-                        removePellet();
-                        wasBlocked = true;
-                    }
-                    else
-                    {
-                        transform.position = new Vector3(currentCol - 1, -currentRow, transform.position.z);
-                        currentCol--;
-                        direction = "left";
-                        cameFrom = "right";
-                        removePellet();
-                        wasBlocked = true;
-                    }
-                }
-            }
-            else {
-                if (thePellets[currentRow][currentCol-1].tag == "Pellet")     //try left
-                {
-
-                    cameFrom = "right";
-                    transform.position = new Vector3(currentCol - 1, -currentRow, transform.position.z);
-                    direction = "left";
-                    currentCol--;
-                    removePellet();
-                    wasBlocked = true;
-                }
-                else if (thePellets[currentRow][currentCol+1].tag == "Pellet")      //try right
-                {
-                    cameFrom = "left";
-                    transform.position = new Vector3(currentCol + 1, -currentRow, transform.position.z);
-                    direction = "right";
-                    currentCol++;
-                    removePellet();
-                    wasBlocked = true;
-                }
-                else
-                {              //move back
-                    if (downObstacle)
-                    {
-                        transform.position = new Vector3(currentCol, -currentRow + 1, transform.position.z);
-                        currentRow--;
-                        direction = "up";
-                        cameFrom = "down";
-                        removePellet();
-                        wasBlocked = true;
-                    }
-                    else
-                    {
-                        transform.position = new Vector3(currentCol, -currentRow - 1, transform.position.z);
-                        currentRow++;
-                        direction = "down";
-                        cameFrom = "up";
-                        removePellet();
-                        wasBlocked = true;
-                    }
-                }
-            }
-        }*/
-        
-
     }
 
+    //Called to manually move pacman along the a* path
     void aStarMovement()
     {
-        Debug.Log("about to set position" + score);
+       
         //Move Pacman to next spot in path
         transform.position = tilePath[0].transform.position;
-        Debug.Log("pos set to " + tilePath[0].transform.position);
+       
         //Set his new row and col correctly
         currentCol = tilePath[0].GetComponent<PelletInfo>().col;
         currentRow = tilePath[0].GetComponent<PelletInfo>().row;
 
-        Debug.Log("moving along path");
+       
 
         //Remove pellet if there is one
         removePellet();
@@ -294,11 +448,11 @@ public class Pacman : MonoBehaviour {
         //Delete from array
         tilePath.RemoveAt(0);
 
-        Debug.Log("Removed pellet from path");
+       
         //Found goal
         if(tilePath.Count == 0)
         {
-            Debug.Log("finished a* movement" + currentCol);
+           
             usingAStarMovement = false;
 
             //Select new target
@@ -306,6 +460,7 @@ public class Pacman : MonoBehaviour {
         }
     }
 
+    //Find path using a*
     void aStarTile()
     {
 
@@ -333,7 +488,7 @@ public class Pacman : MonoBehaviour {
             if (currentTile.gameObject == targetPellet)
             {
                 goalReached = true;
-                Debug.Log("Found it" + targetPellet.transform.position);
+               
 
                 //Add tile path to array
                 GameObject tileForArray = currentTile;
@@ -345,12 +500,12 @@ public class Pacman : MonoBehaviour {
 
                 //Switch to astar path movement
                 usingAStarMovement = true;
-                Debug.Log("Starting a* movement" + currentRow);
+                
                 //Set targetpellet to first element of path
                 targetPellet = tilePath[0];
 
                 //Reset Pellet info
-                Debug.Log("resetting pellets");
+                
                 currentTile.GetComponent<PelletInfo>().reset();
                 for(int i = 0; i < closedList.Count; i++)
                 {
@@ -360,7 +515,7 @@ public class Pacman : MonoBehaviour {
                 {
                     openList[i].GetComponent<PelletInfo>().reset();
                 }
-                Debug.Log("done with reset");
+                
             }
 
             //Keep looking
@@ -508,7 +663,7 @@ public class Pacman : MonoBehaviour {
     //Called when Pacman needs to find the closest group of pellets to begin eating
     void findClosestGroup()
     {
-        Debug.Log("finding new group" + score);
+        
         //Iterate until we get the closest pellet
         bool foundClosest = false;
         int iter = 1;
@@ -638,15 +793,16 @@ public class Pacman : MonoBehaviour {
             iter++;
             
             //failsafe
-            if(iter > 20)
+            if(iter > 40)
             {
-                Debug.Log("ERROR ITER BECAME TOO LARGE");
+                Debug.Log("Error: Pacman looking very far for a group");
                 break;
                
             }
 
         }
-        Debug.Log("found group " + currentPelletGroup);
+        
+    
 
         //TODO make a better way to select this pellet
         //iterate through the group and select the first pellet
@@ -659,8 +815,7 @@ public class Pacman : MonoBehaviour {
             }
         }
     }
-
-
+    
     void iterate() {
 
         if (begin)
@@ -769,7 +924,6 @@ public class Pacman : MonoBehaviour {
             }
         }
     }
-
     
     public void setBegin(int groupNum) {
         begin = true;

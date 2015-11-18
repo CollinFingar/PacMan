@@ -81,6 +81,7 @@ public class MapLoader : MonoBehaviour {
                 pacmanScript.finalMap = finalMap;
                 pacmanScript.maxCol = colNum;
                 pacmanScript.thePellets = thePellets;
+                pacmanScript.groupSize = groupSize;
 
                 pacmanPlaced = true;
                 
