@@ -30,15 +30,15 @@ public class PelletInfo : MonoBehaviour {
         row = arow;
         col = acol;
 
-        //Add Pellet to a group
+        
 
     }
 
-    public int totalCost()
+    public int totalCost(GameObject Goal)
     {
-        if (costFromStart >= 0 && costToGoal >= 0)
+        if (costFromStart >= 0 && setCostToGoal(Goal) >= 0)
         {
-            return (int)(costToGoal) + costFromStart;
+            return (int)(setCostToGoal(Goal)) + costFromStart;
         }
         else
         {
@@ -48,10 +48,17 @@ public class PelletInfo : MonoBehaviour {
     }
 
 
-    void setCostToGoal(GameObject Goal)
+    int setCostToGoal(GameObject Goal)
     {
         //Euclidean
         costToGoal = (int)Mathf.Sqrt(Mathf.Pow((transform.position.x - Goal.transform.position.x), 2) + Mathf.Pow((transform.position.y - Goal.transform.position.y), 2));
-       
+        return costToGoal;
+    }
+
+    public void reset()
+    {
+        parent = null;
+
+        costFromStart = -1;
     }
 }

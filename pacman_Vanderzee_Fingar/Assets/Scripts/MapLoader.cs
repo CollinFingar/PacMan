@@ -79,6 +79,7 @@ public class MapLoader : MonoBehaviour {
                 pacmanScript.currentCol = hit.transform.gameObject.GetComponent<PelletInfo>().col;
                 pacmanScript.text = text;
                 pacmanScript.finalMap = finalMap;
+                pacmanScript.maxCol = colNum;
                 pacmanScript.thePellets = thePellets;
 
                 pacmanPlaced = true;

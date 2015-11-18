@@ -9,6 +9,7 @@ public class Pacman : MonoBehaviour {
     public int currentCol;
 
     public List<string> finalMap;
+    public int maxCol;
 
     private int score = 0;
     public Text text;
@@ -27,7 +28,7 @@ public class Pacman : MonoBehaviour {
 
     bool usingAStarMovement = false;
 
-    List<GameObject> tilePath;
+    public List<GameObject> tilePath;
 
     // Use this for initialization
     void Start () {
@@ -51,7 +52,7 @@ public class Pacman : MonoBehaviour {
             }
 
             //Following the Astar Path
-            else
+            else if(usingAStarMovement)
             {
                 aStarMovement();
             }
@@ -177,6 +178,7 @@ public class Pacman : MonoBehaviour {
         //If theres an obstacle run a*
         if (rightObstacle || leftObstacle || upObstacle || downObstacle)
         {
+            Debug.Log("Looking for a* path" + currentRow);
             aStarTile();
 
         }
@@ -276,12 +278,27 @@ public class Pacman : MonoBehaviour {
 
     void aStarMovement()
     {
+        Debug.Log("about to set position" + score);
+        //Move Pacman to next spot in path
         transform.position = tilePath[0].transform.position;
+        Debug.Log("pos set to " + tilePath[0].transform.position);
+        //Set his new row and col correctly
+        currentCol = tilePath[0].GetComponent<PelletInfo>().col;
+        currentRow = tilePath[0].GetComponent<PelletInfo>().row;
+
+        Debug.Log("moving along path");
+
+        //Remove pellet if there is one
+        removePellet();
+
+        //Delete from array
         tilePath.RemoveAt(0);
 
+        Debug.Log("Removed pellet from path");
         //Found goal
         if(tilePath.Count == 0)
         {
+            Debug.Log("finished a* movement" + currentCol);
             usingAStarMovement = false;
 
             //Select new target
@@ -295,6 +312,7 @@ public class Pacman : MonoBehaviour {
         tilePath = new List<GameObject>();
 
         bool goalReached = false;
+        
 
         //Open list contains start
         List<GameObject> openList = new List<GameObject>();
@@ -315,7 +333,7 @@ public class Pacman : MonoBehaviour {
             if (currentTile.gameObject == targetPellet)
             {
                 goalReached = true;
-                Debug.Log("Found it");
+                Debug.Log("Found it" + targetPellet.transform.position);
 
                 //Add tile path to array
                 GameObject tileForArray = currentTile;
@@ -327,8 +345,22 @@ public class Pacman : MonoBehaviour {
 
                 //Switch to astar path movement
                 usingAStarMovement = true;
+                Debug.Log("Starting a* movement" + currentRow);
                 //Set targetpellet to first element of path
                 targetPellet = tilePath[0];
+
+                //Reset Pellet info
+                Debug.Log("resetting pellets");
+                currentTile.GetComponent<PelletInfo>().reset();
+                for(int i = 0; i < closedList.Count; i++)
+                {
+                    closedList[i].GetComponent<PelletInfo>().reset();
+                }
+                for (int i = 0; i < openList.Count; i++)
+                {
+                    openList[i].GetComponent<PelletInfo>().reset();
+                }
+                Debug.Log("done with reset");
             }
 
             //Keep looking
@@ -375,12 +407,12 @@ public class Pacman : MonoBehaviour {
     }
 
     //Used as overloaded operation to find the lower cost of two tiles. FOR TILES
-    static int SortByCost(GameObject alowest, GameObject acurrent)
+    int SortByCost(GameObject alowest, GameObject acurrent)
     {
         PelletInfo lowest = alowest.GetComponent<PelletInfo>();
         PelletInfo current = acurrent.GetComponent<PelletInfo>();
 
-        return lowest.totalCost().CompareTo(current.totalCost());
+        return lowest.totalCost(targetPellet).CompareTo(current.totalCost(targetPellet));
     }
 
     //Called when Pacman moves to check if he is eating a pellet
@@ -425,35 +457,49 @@ public class Pacman : MonoBehaviour {
         int colIndex = currentTileInfo.col;
 
         //Directly below
-        if (finalMap[rowIndex + 1][colIndex] == '.')
+        //Check for out of bounds
+        if (finalMap.Count >= rowIndex + 1)
         {
-            //Increment distance from start and add to list of neighbors
-            GameObject aneighbor = thePellets[rowIndex + 1][colIndex];
-            neighbors.Add(aneighbor);
+            if (finalMap[rowIndex + 1][colIndex] == '.')
+            {
+                //Increment distance from start and add to list of neighbors
+                GameObject aneighbor = thePellets[rowIndex + 1][colIndex];
+                neighbors.Add(aneighbor);
+            }
         }
-
         //Directly Above
-        if (finalMap[rowIndex - 1][colIndex] == '.')
+        //Check for out of bounds
+        if (rowIndex - 1 >= 0)
         {
-            //Increment distance from start and add to list of neighbors
-            GameObject aneighbor = thePellets[rowIndex - 1][colIndex];
-            neighbors.Add(aneighbor);
+            if (finalMap[rowIndex - 1][colIndex] == '.')
+            {
+                //Increment distance from start and add to list of neighbors
+                GameObject aneighbor = thePellets[rowIndex - 1][colIndex];
+                neighbors.Add(aneighbor);
+            }
         }
-
         //Directly right
-        if (finalMap[rowIndex][colIndex + 1] == '.')
+        //Check for out of bounds
+        if (colIndex + 1 <= maxCol)
         {
-            //Increment distance from start and add to list of neighbors
-            GameObject aneighbor = thePellets[rowIndex][colIndex + 1];
-            neighbors.Add(aneighbor);
+            if (finalMap[rowIndex][colIndex + 1] == '.')
+            {
+                //Increment distance from start and add to list of neighbors
+                GameObject aneighbor = thePellets[rowIndex][colIndex + 1];
+                neighbors.Add(aneighbor);
+            }
         }
 
         //Directly left
-        if (finalMap[rowIndex][colIndex - 1] == '.')
+        //Check for out of bounds
+        if (colIndex - 1 >= 0)
         {
-            //Increment distance from start and add to list of neighbors
-            GameObject aneighbor = thePellets[rowIndex][colIndex - 1];
-            neighbors.Add(aneighbor);
+            if (finalMap[rowIndex][colIndex - 1] == '.')
+            {
+                //Increment distance from start and add to list of neighbors
+                GameObject aneighbor = thePellets[rowIndex][colIndex - 1];
+                neighbors.Add(aneighbor);
+            }
         }
 
         return neighbors;
@@ -462,97 +508,145 @@ public class Pacman : MonoBehaviour {
     //Called when Pacman needs to find the closest group of pellets to begin eating
     void findClosestGroup()
     {
+        Debug.Log("finding new group" + score);
         //Iterate until we get the closest pellet
         bool foundClosest = false;
         int iter = 1;
         while (!foundClosest)
         {
             //Look Up
-            if (thePellets[currentRow - iter][currentCol].tag == "Pellet")
+            //Check for out of bounds
+            if (currentRow - iter >= 0)
             {
-                if(thePellets[currentRow - iter][currentCol].GetComponent<PelletInfo>().eaten == false)
+                if (thePellets[currentRow - iter][currentCol].tag == "Pellet")
                 {
-                    foundClosest = true;
-                    currentPelletGroup = thePellets[currentRow - iter][currentCol].GetComponent<PelletInfo>().groupNum;
+                    if (thePellets[currentRow - iter][currentCol].GetComponent<PelletInfo>().eaten == false)
+                    {
+                        foundClosest = true;
+                        currentPelletGroup = thePellets[currentRow - iter][currentCol].GetComponent<PelletInfo>().groupNum;
+                        break;
+                    }
                 }
             }
 
             //Look Down
-            if (thePellets[currentRow + iter][currentCol].tag == "Pellet")
+            //Check for out of bounds
+            if (currentRow + iter <= thePellets.Count)
             {
-                if (thePellets[currentRow + iter][currentCol].GetComponent<PelletInfo>().eaten == false)
+                if (thePellets[currentRow + iter][currentCol].tag == "Pellet")
                 {
-                    foundClosest = true;
-                    currentPelletGroup = thePellets[currentRow + iter][currentCol].GetComponent<PelletInfo>().groupNum;
+                    if (thePellets[currentRow + iter][currentCol].GetComponent<PelletInfo>().eaten == false)
+                    {
+                        foundClosest = true;
+                        currentPelletGroup = thePellets[currentRow + iter][currentCol].GetComponent<PelletInfo>().groupNum;
+                        break;
+                    }
                 }
             }
 
             //Look Left
-            if (thePellets[currentRow][currentCol - iter].tag == "Pellet")
+            //Check for out of bounds
+            if (currentCol - iter >= 0)
             {
-                if (thePellets[currentRow][currentCol - iter].GetComponent<PelletInfo>().eaten == false)
+                if (thePellets[currentRow][currentCol - iter].tag == "Pellet")
                 {
-                    foundClosest = true;
-                    currentPelletGroup = thePellets[currentRow][currentCol - iter].GetComponent<PelletInfo>().groupNum;
+                    if (thePellets[currentRow][currentCol - iter].GetComponent<PelletInfo>().eaten == false)
+                    {
+                        foundClosest = true;
+                        currentPelletGroup = thePellets[currentRow][currentCol - iter].GetComponent<PelletInfo>().groupNum;
+                        break;
+                    }
                 }
             }
 
             //Look Right
-            if (thePellets[currentRow][currentCol + iter].tag == "Pellet")
+            //Check for out of bounds
+            if (currentCol + iter <= maxCol)
             {
-                if (thePellets[currentRow][currentCol + iter].GetComponent<PelletInfo>().eaten == false)
+                if (thePellets[currentRow][currentCol + iter].tag == "Pellet")
                 {
-                    foundClosest = true;
-                    currentPelletGroup = thePellets[currentRow][currentCol + iter].GetComponent<PelletInfo>().groupNum;
+                    if (thePellets[currentRow][currentCol + iter].GetComponent<PelletInfo>().eaten == false)
+                    {
+                        foundClosest = true;
+                        currentPelletGroup = thePellets[currentRow][currentCol + iter].GetComponent<PelletInfo>().groupNum;
+                        break;
+                    }
                 }
             }
 
             //Look Up/Left
-            if (thePellets[currentRow - iter][currentCol - iter].tag == "Pellet")
+            //Check for out of bounds
+            if (currentRow - iter >= 0 && currentCol - iter >= 0)
             {
-                if (thePellets[currentRow - iter][currentCol - iter].GetComponent<PelletInfo>().eaten == false)
+                if (thePellets[currentRow - iter][currentCol - iter].tag == "Pellet")
                 {
-                    foundClosest = true;
-                    currentPelletGroup = thePellets[currentRow - iter][currentCol - iter].GetComponent<PelletInfo>().groupNum;
+                    if (thePellets[currentRow - iter][currentCol - iter].GetComponent<PelletInfo>().eaten == false)
+                    {
+                        foundClosest = true;
+                        currentPelletGroup = thePellets[currentRow - iter][currentCol - iter].GetComponent<PelletInfo>().groupNum;
+                        break;
+                    }
                 }
             }
 
             //Look Up/Right
-            if (thePellets[currentRow - iter][currentCol + iter].tag == "Pellet")
+            //Check for out of bounds
+            if (currentRow - iter >= 0 && currentCol + iter <= maxCol)
             {
-                if (thePellets[currentRow - iter][currentCol + iter].GetComponent<PelletInfo>().eaten == false)
+                if (thePellets[currentRow - iter][currentCol + iter].tag == "Pellet")
                 {
-                    foundClosest = true;
-                    currentPelletGroup = thePellets[currentRow - iter][currentCol + iter].GetComponent<PelletInfo>().groupNum;
+                    if (thePellets[currentRow - iter][currentCol + iter].GetComponent<PelletInfo>().eaten == false)
+                    {
+                        foundClosest = true;
+                        currentPelletGroup = thePellets[currentRow - iter][currentCol + iter].GetComponent<PelletInfo>().groupNum;
+                        break;
+                    }
                 }
             }
 
             //Look Down/Left
-            if (thePellets[currentRow + iter][currentCol - iter].tag == "Pellet")
+            //Check for out of bounds
+            if (currentRow + iter <= thePellets.Count && currentCol - iter >= 0)
             {
-                if (thePellets[currentRow + iter][currentCol - iter].GetComponent<PelletInfo>().eaten == false)
+                if (thePellets[currentRow + iter][currentCol - iter].tag == "Pellet")
                 {
-                    foundClosest = true;
-                    currentPelletGroup = thePellets[currentRow + iter][currentCol - iter].GetComponent<PelletInfo>().groupNum;
+                    if (thePellets[currentRow + iter][currentCol - iter].GetComponent<PelletInfo>().eaten == false)
+                    {
+                        foundClosest = true;
+                        currentPelletGroup = thePellets[currentRow + iter][currentCol - iter].GetComponent<PelletInfo>().groupNum;
+                        break;
+                    }
                 }
             }
 
             //Look Down/Right
-            if (thePellets[currentRow + iter][currentCol + iter].tag == "Pellet")
+            //Check for out of bounds
+            if (currentRow + iter <= thePellets.Count && currentCol + iter <= maxCol)
             {
-                if (thePellets[currentRow + iter][currentCol + iter].GetComponent<PelletInfo>().eaten == false)
+                if (thePellets[currentRow + iter][currentCol + iter].tag == "Pellet")
                 {
-                    foundClosest = true;
-                    currentPelletGroup = thePellets[currentRow + iter][currentCol + iter].GetComponent<PelletInfo>().groupNum;
+                    if (thePellets[currentRow + iter][currentCol + iter].GetComponent<PelletInfo>().eaten == false)
+                    {
+                        foundClosest = true;
+                        currentPelletGroup = thePellets[currentRow + iter][currentCol + iter].GetComponent<PelletInfo>().groupNum;
+                        break;
+                    }
                 }
             }
 
             //None this distance away. Increase distance to look
-            else
+            iter++;
+            
+            //failsafe
+            if(iter > 20)
             {
-                iter++;
+                Debug.Log("ERROR ITER BECAME TOO LARGE");
+                break;
+               
             }
+
         }
+        Debug.Log("found group " + currentPelletGroup);
 
         //TODO make a better way to select this pellet
         //iterate through the group and select the first pellet
