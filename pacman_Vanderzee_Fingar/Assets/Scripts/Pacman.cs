@@ -304,7 +304,7 @@ public class Pacman : MonoBehaviour {
             }
 
             //Look Down
-            else if (thePellets[currentRow + iter][currentCol].tag == "Pellet")
+            if (thePellets[currentRow + iter][currentCol].tag == "Pellet")
             {
                 if (thePellets[currentRow + iter][currentCol].GetComponent<PelletInfo>().eaten == false)
                 {
@@ -314,7 +314,7 @@ public class Pacman : MonoBehaviour {
             }
 
             //Look Left
-            else if (thePellets[currentRow][currentCol - iter].tag == "Pellet")
+            if (thePellets[currentRow][currentCol - iter].tag == "Pellet")
             {
                 if (thePellets[currentRow][currentCol - iter].GetComponent<PelletInfo>().eaten == false)
                 {
@@ -324,7 +324,7 @@ public class Pacman : MonoBehaviour {
             }
 
             //Look Right
-            else if (thePellets[currentRow][currentCol + iter].tag == "Pellet")
+            if (thePellets[currentRow][currentCol + iter].tag == "Pellet")
             {
                 if (thePellets[currentRow][currentCol + iter].GetComponent<PelletInfo>().eaten == false)
                 {
@@ -334,7 +334,7 @@ public class Pacman : MonoBehaviour {
             }
 
             //Look Up/Left
-            else if (thePellets[currentRow - iter][currentCol - iter].tag == "Pellet")
+            if (thePellets[currentRow - iter][currentCol - iter].tag == "Pellet")
             {
                 if (thePellets[currentRow - iter][currentCol - iter].GetComponent<PelletInfo>().eaten == false)
                 {
@@ -344,7 +344,7 @@ public class Pacman : MonoBehaviour {
             }
 
             //Look Up/Right
-            else if (thePellets[currentRow - iter][currentCol + iter].tag == "Pellet")
+            if (thePellets[currentRow - iter][currentCol + iter].tag == "Pellet")
             {
                 if (thePellets[currentRow - iter][currentCol + iter].GetComponent<PelletInfo>().eaten == false)
                 {
@@ -354,7 +354,7 @@ public class Pacman : MonoBehaviour {
             }
 
             //Look Down/Left
-            else if (thePellets[currentRow + iter][currentCol - iter].tag == "Pellet")
+            if (thePellets[currentRow + iter][currentCol - iter].tag == "Pellet")
             {
                 if (thePellets[currentRow + iter][currentCol - iter].GetComponent<PelletInfo>().eaten == false)
                 {
@@ -364,7 +364,7 @@ public class Pacman : MonoBehaviour {
             }
 
             //Look Down/Right
-            else if (thePellets[currentRow + iter][currentCol + iter].tag == "Pellet")
+            if (thePellets[currentRow + iter][currentCol + iter].tag == "Pellet")
             {
                 if (thePellets[currentRow + iter][currentCol + iter].GetComponent<PelletInfo>().eaten == false)
                 {

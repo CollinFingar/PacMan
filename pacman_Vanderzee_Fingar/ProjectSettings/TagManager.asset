@@ -8,6 +8,8 @@ TagManager:
   - Floor
   - Outside
   - Tree
+  - Pacman
+  - Ghost
   layers:
   - Default
   - TransparentFX
