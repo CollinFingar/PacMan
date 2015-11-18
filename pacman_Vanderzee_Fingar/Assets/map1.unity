@@ -350,6 +350,10 @@ Prefab:
       propertyPath: m_RootOrder
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 164678, guid: ad48c6c174d148c43ba10f723d3bbf5d, type: 2}
+      propertyPath: m_TagString
+      value: Ghost
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: ad48c6c174d148c43ba10f723d3bbf5d, type: 2}
   m_IsPrefabParent: 0
@@ -391,6 +395,10 @@ Prefab:
     - target: {fileID: 497292, guid: 8ce02c64053575c4f8b355a4c2ef7800, type: 2}
       propertyPath: m_RootOrder
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 174254, guid: 8ce02c64053575c4f8b355a4c2ef7800, type: 2}
+      propertyPath: m_TagString
+      value: Ghost
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 8ce02c64053575c4f8b355a4c2ef7800, type: 2}
@@ -692,6 +700,10 @@ Prefab:
       propertyPath: m_IsKinematic
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 180188, guid: 16e791802e1264f43bc061febd6e2b84, type: 2}
+      propertyPath: m_TagString
+      value: Ghost
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 16e791802e1264f43bc061febd6e2b84, type: 2}
   m_IsPrefabParent: 0
@@ -888,6 +900,10 @@ Prefab:
       propertyPath: m_RootOrder
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 169448, guid: c268f3fef32c725439feedd1346c4944, type: 2}
+      propertyPath: m_TagString
+      value: Ghost
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: c268f3fef32c725439feedd1346c4944, type: 2}
   m_IsPrefabParent: 0
@@ -959,7 +975,7 @@ MonoBehaviour:
   - {fileID: 1246982787}
   - {fileID: 2063355728}
   - {fileID: 1932979487}
-  groupSize: 30
+  groupSize: 10
   mapName: map1.txt
   score: 0
   text: {fileID: 1531406218}
