@@ -198,6 +198,21 @@ public class MapLoader : MonoBehaviour {
 
 
         }
+        if (GUI.Button(new Rect(60, 10, 60, 30), "Restart")) {
+            Application.LoadLevel(Application.loadedLevel);
+            Time.timeScale = 1;
+        }
+        if (GUI.Button(new Rect(120, 10, 90, 30), "Switch map")) {
+            if (Application.loadedLevel == 0)
+            {
+                Application.LoadLevel(1);
+                Time.timeScale = 1;
+            }
+            else {
+                Application.LoadLevel(0);
+                Time.timeScale = 1;
+            }
+        }
 
         //If were hovering over a button
         if (new Rect(10, 10, 50, 30).Contains(Event.current.mousePosition)) hoveringOnGUI = true;
