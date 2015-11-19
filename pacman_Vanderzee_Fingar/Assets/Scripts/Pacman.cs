@@ -83,11 +83,10 @@ public class Pacman : MonoBehaviour {
                 }
             }
 
-
             switch (state) {
                 //If it's in the relaxed pellet-eating state.
                 case (int)states.pellets:
-                    if (closest < 20){
+                    if (closest < 8){
                         state = (int)states.running;
                     }
                     else if (closest < 25){
@@ -109,11 +108,11 @@ public class Pacman : MonoBehaviour {
                     break;
                 //If it's in the semi-alert move away state.
                 case (int)states.movegroup:
-                    if (closest < 20){
+                    if (closest < 8){
                         state = (int)states.running;
                     }
                     else if (closest < 25){
-                        if (justFoundAnotherGroup)
+                        if (!justFoundAnotherGroup)
                         {
                             findNeighboringGroup(ghosts[closeIndex]);
                             justFoundAnotherGroup = true;
@@ -138,7 +137,7 @@ public class Pacman : MonoBehaviour {
                     break;
                 //If it's in the full-alert get-out-of-there state
                 case (int)states.running:
-                    if (closest < 20){
+                    if (closest < 8){
                         moveAwayFromGhost(ghosts[closeIndex]);
                     }
                     else if (closest < 25){

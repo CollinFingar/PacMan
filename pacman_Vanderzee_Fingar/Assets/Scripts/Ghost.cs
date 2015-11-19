@@ -96,10 +96,16 @@ public class Ghost : MonoBehaviour {
                     }
                     break;
             }
+            if (transform.position == pacman.transform.position)
+            {
+                Debug.Log("End");
+                Time.timeScale = 0;
+            }
         }
         else {
             if (transform.position == pacman.transform.position) {
                 Debug.Log("End");
+                Time.timeScale = 0;
             }
         }
     }
