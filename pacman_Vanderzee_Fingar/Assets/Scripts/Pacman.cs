@@ -31,6 +31,16 @@ public class Pacman : MonoBehaviour {
 
     GameObject[] ghosts;
 
+    bool justFoundAnotherGroup = false;
+
+    enum states
+    {
+        pellets,
+        movegroup,
+        running
+    }
+    int state = (int)states.pellets;
+
     bool ghostsFar = true;      //True to activate good stage. Follows pellets
     //bool ghostNearby = false;   //True to activiate middle stage. Ghost closish.
 
@@ -60,40 +70,114 @@ public class Pacman : MonoBehaviour {
     void FixedUpdate() {
         if (begin)
         {
+
+            float closest = Mathf.Infinity;
+            int closeIndex = 0;
+            for (int i = 0; i < ghosts.Length; i++)
+            {
+                float aDistance = Vector2.Distance(transform.position, ghosts[i].transform.position);
+                if (aDistance < closest)
+                {
+                    closest = aDistance;
+                    closeIndex = i;
+                }
+            }
+
+
+            switch (state) {
+                //If it's in the relaxed pellet-eating state.
+                case (int)states.pellets:
+                    if (closest < 20){
+                        state = (int)states.running;
+                    }
+                    else if (closest < 25){
+                        state = (int)states.movegroup;
+                        justFoundAnotherGroup = false;
+                    }
+                    else {
+                        if (!usingAStarMovement)
+                        {
+                            safeGroupMovement();
+                        }
+
+                        //Following the Astar Path
+                        else if (usingAStarMovement)
+                        {
+                            aStarMovement();
+                        }
+                    }
+                    break;
+                //If it's in the semi-alert move away state.
+                case (int)states.movegroup:
+                    if (closest < 20){
+                        state = (int)states.running;
+                    }
+                    else if (closest < 25){
+                        if (justFoundAnotherGroup)
+                        {
+                            findNeighboringGroup(ghosts[closeIndex]);
+                            justFoundAnotherGroup = true;
+                        }
+                        else {
+                            if (!usingAStarMovement)
+                            {
+                                safeGroupMovement();
+                            }
+
+                            //Following the Astar Path
+                            else if (usingAStarMovement)
+                            {
+                                aStarMovement();
+                            }
+                        }
+                        
+                    }
+                    else {
+                        state = (int)states.pellets;
+                    }
+                    break;
+                //If it's in the full-alert get-out-of-there state
+                case (int)states.running:
+                    if (closest < 20){
+                        moveAwayFromGhost(ghosts[closeIndex]);
+                    }
+                    else if (closest < 25){
+                        state = (int)states.movegroup;
+                        justFoundAnotherGroup = false;
+                    }
+                    else {
+                        state = (int)states.pellets;
+                    }
+                    break;
+
+            }
+
             
             //TESTING NEW BEHAVIOR
             if (!ghostsFar)
             {
-                float closest = Mathf.Infinity;
-                int closeIndex = 0;
-                for(int i = 0; i < ghosts.Length; i++)
-                {
-                    float aDistance = Vector2.Distance(transform.position, ghosts[i].transform.position);
-                    if(aDistance < closest)
-                    {
-                        closest = aDistance;
-                        closeIndex = i;
-                    }
-                }
+                //float closest = Mathf.Infinity;
+                //int closeIndex = 0;
+                //for (int i = 0; i < ghosts.Length; i++)
+                //{
+                //    float aDistance = Vector2.Distance(transform.position, ghosts[i].transform.position);
+                //    if (aDistance < closest)
+                //    {
+                //        closest = aDistance;
+                //        closeIndex = i;
+                //    }
+                //}
 
-                //Switch pellet groups to avoid ghost
-                findNeighboringGroup(ghosts[closeIndex]);
-                ghostsFar = true;
+                ////Switch pellet groups to avoid ghost
+                //findNeighboringGroup(ghosts[closeIndex]);
+                //ghostsFar = true;
 
 
             }
 
             //Normal Pellet following
-            if (!usingAStarMovement & ghostsFar)
-            {
-                safeGroupMovement();
-            }
-
-            //Following the Astar Path
-            else if(usingAStarMovement & ghostsFar)
-            {
-                aStarMovement();
-            }
+            
+           
             
             if (string.Compare(direction, "up") == 0)
             {
@@ -110,6 +194,93 @@ public class Pacman : MonoBehaviour {
             else
             {
                 transform.localEulerAngles = new Vector3(0, 0, 0);
+            }
+        }
+    }
+
+    void moveAwayFromGhost(GameObject ghost) {
+        bool movedHorizontally = false;
+        bool movedVeritacally = false;
+        if (ghost.transform.position.x < transform.position.x) {                //If the ghost is to the left?
+            if (thePellets[currentRow][currentCol+1].tag == "Pellet")
+            {
+                transform.position = new Vector3(currentCol + 1, -currentRow, transform.position.z);
+                currentCol++;
+                direction = "right";
+                removePellet();
+                wasBlocked = false;
+                movedHorizontally = true;
+            }
+        } else if(ghost.transform.position.x > transform.position.x) {          //If the ghost is to the right?
+            if (thePellets[currentRow][currentCol-1].tag == "Pellet")
+            {
+                transform.position = new Vector3(currentCol - 1, -currentRow, transform.position.z);
+                currentCol--;
+                direction = "left";
+                removePellet();
+                wasBlocked = false;
+                movedHorizontally = true;
+            }
+        }
+        if (ghost.transform.position.y > transform.position.y) {                //If the ghost is below
+            if (thePellets[currentRow + 1][currentCol].tag == "Pellet")
+            {
+                transform.position = new Vector3(currentCol, -currentRow - 1, transform.position.z);
+                currentRow++;
+                direction = "down";
+                removePellet();
+                wasBlocked = false;
+                movedVeritacally = true;
+            }
+        } else if(ghost.transform.position.y < transform.position.y) {          //If the ghost is above
+            if (thePellets[currentRow - 1][currentCol].tag == "Pellet")
+            {
+                transform.position = new Vector3(currentCol, -currentRow + 1, transform.position.z);
+                currentRow--;
+                direction = "up";
+                removePellet();
+                wasBlocked = false;
+                movedVeritacally = true;
+            }
+        }
+        if (!movedVeritacally && !movedHorizontally) {
+            if (ghost.transform.position.x == transform.position.x){
+                if (thePellets[currentRow][currentCol + 1].tag == "Pellet")
+                {
+                    transform.position = new Vector3(currentCol + 1, -currentRow, transform.position.z);
+                    currentCol++;
+                    direction = "right";
+                    removePellet();
+                    wasBlocked = false;
+                    movedHorizontally = true;
+                } else if (thePellets[currentRow][currentCol - 1].tag == "Pellet")
+                {
+                    transform.position = new Vector3(currentCol - 1, -currentRow, transform.position.z);
+                    currentCol--;
+                    direction = "left";
+                    removePellet();
+                    wasBlocked = false;
+                    movedHorizontally = true;
+                }
+            }
+            else {
+                if (thePellets[currentRow + 1][currentCol].tag == "Pellet")
+                {
+                    transform.position = new Vector3(currentCol, -currentRow - 1, transform.position.z);
+                    currentRow++;
+                    direction = "down";
+                    removePellet();
+                    wasBlocked = false;
+                    movedVeritacally = true;
+                } else if (thePellets[currentRow - 1][currentCol].tag == "Pellet")
+                {
+                    transform.position = new Vector3(currentCol, -currentRow + 1, transform.position.z);
+                    currentRow--;
+                    direction = "up";
+                    removePellet();
+                    wasBlocked = false;
+                    movedVeritacally = true;
+                }
             }
         }
     }
@@ -432,7 +603,8 @@ public class Pacman : MonoBehaviour {
     //Called to manually move pacman along the a* path
     void aStarMovement()
     {
-       
+        int prevCol = currentCol;
+        int prevRow = currentRow;
         //Move Pacman to next spot in path
         transform.position = tilePath[0].transform.position;
        
@@ -440,7 +612,21 @@ public class Pacman : MonoBehaviour {
         currentCol = tilePath[0].GetComponent<PelletInfo>().col;
         currentRow = tilePath[0].GetComponent<PelletInfo>().row;
 
-       
+        if (prevCol < currentCol)
+        {
+            direction = "right";
+        }
+        else if (prevCol > currentCol)
+        {
+            direction = "left";
+        }
+        else if (prevRow > currentRow)
+        {
+            direction = "up";
+        }
+        else {
+            direction = "down";
+        }
 
         //Remove pellet if there is one
         removePellet();
