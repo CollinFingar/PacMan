@@ -103,7 +103,7 @@ public class Ghost : MonoBehaviour {
             }
         }
         else {
-            if (transform.position == pacman.transform.position) {
+            if (begin && transform.position == pacman.transform.position) {
                 Debug.Log("End");
                 Time.timeScale = 0;
             }
